@@ -14,9 +14,9 @@
     </el-col>
     <!-- table 内容 -->
     <el-table :data="roleList" style="width: 100%" :border='true'>
-      <el-table-column label="角色名" prop="Name">
+      <el-table-column label="角色名" prop="name">
       </el-table-column>
-      <el-table-column label="创建时间" prop="CreateTime" :formatter="CreateTime">
+      <el-table-column label="创建时间" prop="opTime" :formatter="CreateTime">
       </el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
@@ -26,17 +26,11 @@
       </el-table-column>
     </el-table>
 
-    <!-- 分页 -->
-    <div class="block">
-      <el-pagination @current-change="handleCurrentChange"
-       layout="prev, pager, next,jumper" :page-count="pageCount">
-      </el-pagination>
-    </div>
     <!--编辑界面-->
     <el-dialog title="编辑" :visible.sync="editFormVisible">
       <el-form :model="editForm" label-width="80px" :rules="editFormRules" ref="editForm">
-        <el-form-item label="角色名称" prop="Name">
-          <el-input v-model="editForm.Name" auto-complete="off"></el-input>
+        <el-form-item label="角色名称" prop="name">
+          <el-input v-model="editForm.name" auto-complete="off"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -47,8 +41,8 @@
     <!-- 新增界面 -->
     <el-dialog title="新增" :visible.sync="addFormVisible">
       <el-form :model="addForm" label-width="80px" :rules="addFormRules" ref="addForm">
-        <el-form-item label="角色名称" prop="Name">
-          <el-input v-model="addForm.Name" auto-complete="off"></el-input>
+        <el-form-item label="角色名称" prop="name">
+          <el-input v-model="addForm.name" auto-complete="off"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -64,9 +58,6 @@ import md5 from "js-md5";
 export default {
   data() {
     return {
-      pageIndex: 1,
-      pageSize: 10,
-      pageCount: 1,
       roleList: [], //管理员角色列表
       // 搜索关键字
       filters: {
@@ -118,32 +109,30 @@ export default {
       */
     getInfo() {
       this.$http
-        .get("../../../static/JSON/Roles.json"
-        //   "/hxmback/api/Role/GetRoles", 
-        // {
-        //   params: {
-        //     pageIndex: this.pageIndex,
-        //     pageSize: this.pageSize
-        //   }
-        // }
-        )
+        .get("/app/roles/select")
         .then(
           function(response) {
-            var status = response.data.Status;
-            if (status === 1) {
-              this.roleList = response.data.Result.data;
-              this.pageCount = response.data.Result.PageIndex;
-            } else if (status === 40001) {
+            var returnCode = response.data.returnCode;
+            if (returnCode == '1111') {
+              this.roleList = response.data.result;
+              //this.pageCount = response.data.Result.PageIndex;
+            } else if (returnCode === 40001) {
               this.$message({
                 showClose: true,
                 type: "warning",
-                message: response.data.Result
+                message: response.data.returnMessage
               });
               setTimeout(() => {
                 tt.$router.push({
                   path: "/login"
                 });
               }, 1500);
+            }else {
+                this.$message({
+                showClose: true,
+                type: "warning",
+                message: response.data.returnMessage
+                });
             }
           }.bind(this)
         )
@@ -165,10 +154,6 @@ export default {
       var lock = row[lock.property];
       return lock ? "是" : "否";
     },
-    handleCurrentChange(val) {
-      this.pageIndex = val;
-      this.getInfo();
-    },
     /*
         1、跳转设置页面,
         2、点击管理员列表的编辑，弹出模态框
@@ -179,12 +164,10 @@ export default {
 
     handleSetting(index, row) {
       var obj = Object.assign({}, row);
-      console.log(obj);
-      var urlId = obj.ID;
-      this.$router.push("/role/rolelimit/id=" + urlId+"&rolename="+obj.Name);
+      var urlId = obj.id;
+      this.$router.push("/role/rolelimit/id=" + urlId+"&rolename="+obj.name);
     },
     handleEdit(index, row) {
-      console.log(Object.assign({}, row));
       var obj = Object.assign({}, row);
       this.editFormVisible = true;
       this.editForm = obj;
@@ -200,31 +183,27 @@ export default {
           this.$confirm("确认提交吗？", "提示", {}).then(() => {
             this.editLoading = true;
             var para = Object.assign({}, this.editForm);
-            // 将token传入参数中
-            para.Token = getCookie("token");
+
             // 发保存请求
             this.$http
-              .get("/hxmback/api/Role/Edit", {
-                params: {
-                  ID: para.ID,
-                  Role: para.Name,
-                  Token: para.Token
-                }
+              .post("/app/roles/edit", {
+                  'id': para.id,
+                  'name': para.name,
               })
               .then(
                 function(response) {
                   this.editLoading = false;
-                  var status = response.data.Status;
-                  if (status === 1) {
+                  var returnCode = response.data.returnCode;
+                  if (returnCode == '1111') {
                     // 表单重置
                     this.$refs["editForm"].resetFields();
                     this.editFormVisible = false;
                     this.getInfo();
-                  } else if (status === 40001) {
+                  } else if (returnCode === 40001) {
                     this.$message({
                       showClose: true,
                       type: "warning",
-                      message: response.data.Result
+                      message: response.data.returnMessage
                     });
                     setTimeout(() => {
                       tt.$router.push({
@@ -235,7 +214,7 @@ export default {
                     this.$message({
                       showClose: true,
                       type: "warning",
-                      message: response.data.Result
+                      message: response.data.returnMessage
                     });
                   }
                 }.bind(this)
@@ -259,31 +238,28 @@ export default {
           //判断是否填写完整  --true
           this.$confirm("确认提交吗？", "提示", {}).then(() => {
             this.addLoading = true;
-            var para = Object.assign({}, this.addForm);
-            // 将token传入参数中
-            para.Token = getCookie("token");
+            // var para = Object.assign({}, this.addForm);
+            // // 将token传入参数中
+            // para.Token = getCookie("token");
             // 发保存请求
             this.$http
-              .get("/hxmback/api/Role/Add", {
-                params: {
-                  Role: para.Name,
-                  Token: para.Token
-                }
+              .post("/app/roles/save", {
+                'name' : this.addForm.name
               })
               .then(
                 function(response) {
                   this.addLoading = false;
-                  var status = response.data.Status;
-                  if (status === 1) {
+                  var returnCode = response.data.returnCode;
+                  if (returnCode == '1111') {
                     // 表单重置
                     this.$refs["addForm"].resetFields();
                     this.addFormVisible = false;
                     this.getInfo();
-                  } else if (status === 40001) {
+                  } else if (returnCode === 40001) {
                     this.$message({
                       showClose: true,
                       type: "warning",
-                      message: response.data.Result
+                      message: response.data.returnMessage
                     });
                     setTimeout(() => {
                       tt.$router.push({
@@ -294,7 +270,7 @@ export default {
                     this.$message({
                       showClose: true,
                       type: "warning",
-                      message: response.data.Result
+                      message: response.data.returnMessage
                     });
                   }
                 }.bind(this)
@@ -314,6 +290,10 @@ export default {
     }
   },
   mounted() {
+    var _this = this;
+    if(sessionStorage.getItem("username") == "" || sessionStorage.getItem("username") == null){
+      _this.$router.push({ path: "/login"});
+    }
     this.getInfo();
   }
 };

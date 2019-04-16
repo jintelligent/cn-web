@@ -5,17 +5,53 @@
 		  		<div class="manage_tip">
 		  			<p>菜鸟管理</p>
 		  		</div>
-		    	<el-form :model="loginForm" :rules="rules" ref="loginForm">
-					<el-form-item prop="username">
-						<el-input v-model="loginForm.username" placeholder="用户名"></el-input>
-					</el-form-item>
-					<el-form-item prop="password">
-						<el-input type="password" placeholder="密码" v-model="loginForm.password"></el-input>
-					</el-form-item>
-					<el-form-item>
-				    	<el-button type="primary" @click="submitForm('loginForm')" class="submit_btn">登陆</el-button>
-				  	</el-form-item>
-				</el-form>
+          <el-tabs type="border-card">
+          <el-tab-pane label="登录">
+            <el-form :model="loginForm" :rules="rules" ref="loginForm">
+              <el-form-item prop="username">
+                <el-input v-model="loginForm.username" placeholder="用户名"></el-input>
+              </el-form-item>
+              <el-form-item prop="password">
+                <el-input type="password" placeholder="密码" v-model="loginForm.password"></el-input>
+              </el-form-item>
+              <el-form-item>
+                  <el-button type="primary" @click="submitForm('loginForm')" class="submit_btn">登录</el-button>
+                </el-form-item>
+               <!--  <el-form-item>
+                <router-link to="/home" class="to_forget" >忘记密码？</router-link>
+              </el-form-item> -->
+            </el-form>
+          </el-tab-pane>
+          <el-tab-pane label="注册">
+            <el-form :model="registerForm" :rules="rules2" ref="registerForm" >
+              <el-form-item prop="username">
+                <el-input v-model="registerForm.username" placeholder="用户名" auto-complete="off" ></el-input>
+              </el-form-item>  
+<!--               <el-form-item label="性别">
+                <el-select v-model="registerForm.sex" placeholder="请选择性别">
+                  <el-option label="男" value="男"></el-option>
+                  <el-option label="女" value="女"></el-option>
+                </el-select>
+              </el-form-item> -->
+              <el-form-item prop="password">
+                <el-input type="password" placeholder="密码" v-model="registerForm.password" auto-complete="off" ></el-input>
+              </el-form-item>
+              <el-form-item prop="email">
+                <el-input v-model="registerForm.email" placeholder="邮箱-用于找回密码"></el-input>
+              </el-form-item>             
+<!--               <el-form-item label="确认密码" prop="checkPass">
+                <el-input type="password" v-model="registerForm.checkPass" auto-complete="off" ></el-input>
+              </el-form-item> -->
+<!--               <el-form-item label="年龄" prop="age">
+                <el-input v-model.number="registerForm.age" ></el-input>
+              </el-form-item> -->
+              <el-form-item>
+                <el-button type="primary" @click="resetForm('registerForm')" class="submit_btn">注册</el-button>
+              </el-form-item>
+            </el-form>
+          </el-tab-pane>
+        </el-tabs>
+		    	
 	  		</section>
 	  	</transition>
   	</div>
@@ -29,6 +65,23 @@ import axios from 'axios';
 export default {
   data() {
     return {
+      registerForm: {
+          username: '',
+          email: '',
+          password: ''
+        },
+        rules2: {
+          username: [
+            { required: true, message: '请输入用户名', trigger: 'blur' }
+          ],
+          password: [
+            { required: true, message: '请输入密码', trigger: 'blur' }
+          ],
+          email:[
+            { required: true, message: '请输入邮箱地址', trigger: 'blur' },
+            { type: 'email', message: '请输入正确的邮箱地址', trigger: ['blur','change'] }
+          ]
+        },
       loginForm: {
         username: "",
         password: ""
@@ -55,80 +108,55 @@ export default {
 
         //发送登录验证请求
         const res = await axios.post(
-          'user/login/',
+          '/app/user/login/',
           {
             'userName': this.loginForm.username,
-            'passWord': this.loginForm.password
+            'passWord': md5(this.loginForm.password)
           })
 
         //控制跳转
-        if(res.data[0] == null){
-          this.$message.error('用户名或密码错误');
+        if(res.data.returnCode == '1111'){
+          sessionStorage.setItem("username", this.loginForm.username)
+          this.$router.push({path: '/home'})
+          
         }else{
-          console.log(res)
-          sessionStorage.setItem("username", res.data[0].username)
-          this.$router.push({path: '/'})
-          sessionStorage.getItem("username")
-
+          this.$message.error(res.data.returnMessage);
         }
         
       } catch (err) {
         console.log(err)
       }
     },
-      // this.$refs[formName].validate(async valid => {
-        
 
-        // if (valid) {
-        //   this.$http
-        //     .post("/hxmback/api/Admin/Login", {
-        //       Name: this.loginForm.username,
-        //       Password: md5(this.loginForm.password)
-        //     })
-        //     .then(
-        //       function(response) {
-        //         var status = response.data.Status;
-        //         if (status === 1) {
-        //           setCookie("token", response.data.Result);
-        //           setCookie("username", tt.loginForm.username);
-        //           this.$message({
-        //             showClose: true,
-        //             type: "success",
-        //             message: "登陆成功"
-        //           });
-        //           setTimeout(() => {
-        //             this.$router.push({ path: "/" });
-        //           }, 1000);
-        //         } else {
-        //           this.$message({
-        //             showClose: true,
-        //             type: "warning",
-        //             message: response.data.Result
-        //           });
-        //         }
-        //       }.bind(this)
-        //     )
-        //     .catch(
-        //       function(error) {
-        //         this.$notify.error({
-        //           title: "错误",
-        //           message: "错误：请检查网络"
-        //         });
-        //       }.bind(this)
-        //     );
-        // } else {
-        //   this.$notify.error({
-        //     title: "错误",
-        //     message: "请输入用户名和密码",
-        //     offset: 100
-        //   });
-        //   return false;
-        // }
-      // });
-    // }
-  },
-  watch: {
-    adminInfo: function(newValue) {}
+    async resetForm (formName) {
+
+      try {
+        // 表单验证
+        await this.$refs[formName].validate()
+
+        //发送登录验证请求
+        const res = await axios.post(
+          '/app/user/register/',
+          {
+            'userName': this.registerForm.username,
+            'passWord': md5(this.registerForm.password),
+            'email': this.registerForm.email
+          })
+
+        //控制跳转
+        if(res.data.returnCode == '0000'){
+          this.$message.error(res.data.returnMessage);
+        }else{
+          this.$message.success(res.data.returnMessage);
+          console.log(res)
+          //sessionStorage.setItem("username", this.loginForm.username)
+          //this.$router.push({path: '/home'})
+        }
+        
+      } catch (err) {
+        console.log(err)
+      }
+    }
   }
 };
 </script>

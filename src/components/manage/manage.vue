@@ -20,13 +20,15 @@
     </el-col>
     <!-- table 内容 -->
     <el-table :data="manageList" style="width: 100%" :border='true'>
-      <el-table-column label="用户名" prop="Name">
+      <el-table-column label="用户名" prop="userName">
       </el-table-column>
-      <el-table-column label="是否锁定" prop="IsLock" :formatter="IsLock">
+      <el-table-column label="邮箱" prop="email">
       </el-table-column>
-      <el-table-column label="创建时间" prop="CreateTime" :formatter="CreateTime">
+      <el-table-column label="是否锁定" prop="isLock" :formatter="IsLock">
       </el-table-column>
-      <el-table-column label="操作者" prop="Role">
+      <el-table-column label="创建时间" prop="opTime">
+      </el-table-column>
+      <el-table-column label="角色" prop="roleId" :formatter="RoleId">
       </el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
@@ -45,21 +47,24 @@
     <!--编辑界面-->
     <el-dialog title="编辑" :visible.sync="editFormVisible">
       <el-form :model="editForm" label-width="80px" :rules="editFormRules" ref="editForm">
-        <el-form-item label="账号" prop="Name">
-          <el-input v-model="editForm.Name" auto-complete="off"></el-input>
+        <el-form-item label="账号" prop="username">
+          <el-input v-model="editForm.username" auto-complete="off" disabled></el-input>
         </el-form-item>
-        <el-form-item label="密码" prop="Password">
-          <el-input type="password" v-model="editForm.Password" :maxlength="20" :clearable='true'></el-input>
+        <el-form-item label="密码" prop="password">
+          <el-input type="password" v-model="editForm.password" :maxlength="20" :clearable='true'></el-input>
         </el-form-item>
         <el-form-item label="锁定">
-          <el-radio-group v-model="editForm.IsLock">
-            <el-radio class="radio" :label="true">是</el-radio>
-            <el-radio class="radio" :label="false">否</el-radio>
-          </el-radio-group>
+          <el-radio-group v-model="editForm.isLock">
+          <template v-for="(item, index) in lockList">
+            <el-radio
+              :label="item.code"
+            >{{item.text}}</el-radio>
+          </template>
+        </el-radio-group>
         </el-form-item>
         <el-form-item label="角色">
-          <el-select v-model="editForm.RoleID" placeholder="请选择角色">
-            <el-option v-for="item in roleList" :key="item.ID" :label="item.Name" :value="item.ID"></el-option>
+          <el-select v-model="editForm.role" placeholder="请选择角色">
+            <el-option v-for="item in roleList" :key="item.id" :label="item.name" :value="item.id"></el-option>
           </el-select>
         </el-form-item>
       </el-form>
@@ -71,21 +76,15 @@
     <!-- 新增界面 -->
     <el-dialog title="新增" :visible.sync="addFormVisible">
       <el-form :model="addForm" label-width="80px" :rules="addFormRules" ref="addForm">
-        <el-form-item label="账号" prop="Name">
-          <el-input v-model="addForm.Name" auto-complete="off"></el-input>
+        <el-form-item label="账号" prop="username">
+          <el-input v-model="addForm.username" auto-complete="off"></el-input>
         </el-form-item>
-        <el-form-item label="密码" prop="Password">
-          <el-input type="password" v-model="addForm.Password" :maxlength="20" :clearable='true'></el-input>
+        <el-form-item label="密码" prop="password">
+          <el-input type="password" v-model="addForm.password" :maxlength="20" :clearable='true'></el-input>
         </el-form-item>
-        <!-- <el-form-item label="锁定">
-          <el-radio-group v-model="addForm.IsLock">
-            <el-radio class="radio" :label="true">是</el-radio>
-            <el-radio class="radio" :label="false">否</el-radio>
-          </el-radio-group>
-        </el-form-item> -->
         <el-form-item label="角色">
-          <el-select v-model="addForm.RoleID" placeholder="请选择角色">
-            <el-option v-for="item in roleList" :key="item.ID" :label="item.Name" :value="item.ID"></el-option>
+          <el-select v-model="addForm.role" placeholder="请选择角色">
+            <el-option v-for="item in roleList" :key="item.id" :label="item.name" :value="item.id"></el-option>
           </el-select>
         </el-form-item>
       </el-form>
@@ -117,11 +116,10 @@ export default {
 
       //编辑界面数据
       editForm: {
-        IsLock: false,
-        Name: "",
-        Role: "",
-        RoleID: "",
-        Password: ""
+        isLock: "",
+        username: "",
+        role: "",
+        password: ""
       },
       editFormRules: {
         Name: [
@@ -139,6 +137,15 @@ export default {
           }
         ]
       },
+      lockList: [
+        {
+          text: "已锁定",
+          code: "0"
+        },
+        {
+          text: "未锁定",
+          code: "1"
+        }],
       //新增界面是否显示
       addFormVisible: false,
       addLoading: false,
@@ -160,36 +167,27 @@ export default {
       },
       //新增界面数据
       addForm: {
-        IsLock: false,
-        Name: "",
-        RoleID: "",
-        Password: ""
+        username: "",
+        role: "",
+        password: ""
       }
     };
   },
   methods: {
     /*
          1、获取管理员列表 渲染列表
-         2、格式化时间
+         2、分页
          3、格式化是否锁定
-         4、分页
       */
     getInfo() {
       this.$http
-        .get("../../../static/JSON/GetAdmin.json"
-        // , {
-        //   params: {
-        //     pageIndex: this.pageIndex,
-        //     pageSize: this.pageSize
-        //   }
-        // }
-        )
+        .get("/app/user/selAllUser")
         .then(
           function(response) {
-            var status = response.data.Status;
-            if (status === 1) {
-              this.manageList = response.data.Result.data;
-              this.pageCount = response.data.Result.PageIndex;
+            var returnCode = response.data.returnCode;
+            if (returnCode == '1111') {
+              this.manageList = response.data.result;
+              //this.pageCount = response.data.Result.PageIndex;
             } else if (status === 40001) {
               this.$message({
                 showClose: true,
@@ -201,6 +199,12 @@ export default {
                   path: "/login"
                 });
               }, 1500);
+            }else {
+                this.$message({
+                showClose: true,
+                type: "warning",
+                message: response.data.returnMessage
+                });
             }
           }.bind(this)
         )
@@ -214,13 +218,24 @@ export default {
           }.bind(this)
         );
     },
-    CreateTime(row, time) {
-      var date = row[time.property];
-      return date.replace("T", " ").split(".")[0];
-    },
+
     IsLock(row, lock) {
       var lock = row[lock.property];
-      return lock ? "是" : "否";
+      return lock == '0' ? "是" : "否";
+    },
+    RoleId(row, id) {
+      switch(row[id.property]){
+        case 1:
+          return "管理员";
+        case 2:
+          return "普通用户";
+        case 5:
+          return "游客";
+      }
+        
+      
+      // var id = row[id.property];
+      // return id === 1 ? "管理员" : "普通用户";
     },
     handleCurrentChange(val) {
       this.pageIndex = val;
@@ -236,28 +251,29 @@ export default {
     getRoleList() {
       // 获取角色列表
       this.$http
-        .get("/hxmback/api/Role/GetRoles", {
-          params: {
-            PageIndex: 1,
-            PageSize: 999
-          }
-        })
+        .get("/app/roles/select", {})
         .then(
           function(response) {
-            var status = response.data.Status;
-            if (status === 1) {
-              this.roleList = response.data.Result.data;
-            } else if (status === 40001) {
+            var returnCode = response.data.returnCode;
+            if (returnCode == '1111') {
+              this.roleList = response.data.result;
+            } else if (returnCode === 40001) {
               this.$message({
                 showClose: true,
                 type: "warning",
-                message: response.data.Result
+                message: response.data.returnMessage
               });
               setTimeout(() => {
                 tt.$router.push({
                   path: "/login"
                 });
               }, 1500);
+            }else {
+                this.$message({
+                showClose: true,
+                type: "warning",
+                message: response.data.returnMessage
+                });
             }
           }.bind(this)
         )
@@ -271,49 +287,17 @@ export default {
           }.bind(this)
         );
     },
+
     handleEdit(index, row) {
-      // console.log(Object.assign({}, row));
       var obj = Object.assign({}, row);
-      this.editFormVisible = true;
-      // 根据id获取用户信息
-      this.$http
-        .get("/hxmback/api/Admin/GetAdminByID", {
-          params: {
-            ID: obj.ID
-          }
-        })
-        .then(
-          function(response) {
-            var status = response.data.Status;
-            if (status === 1) {
-              this.editForm = response.data.Result;
-              // 将管理员ID传入参数中
-              this.editForm.ID = obj.ID;
-            } else if (status === 40001) {
-              this.$message({
-                showClose: true,
-                type: "warning",
-                message: response.data.Result
-              });
-              setTimeout(() => {
-                tt.$router.push({
-                  path: "/login"
-                });
-              }, 1500);
-            }
-          }.bind(this)
-        )
-        // 请求error
-        .catch(
-          function(error) {
-            this.$notify.error({
-              title: "错误",
-              message: "错误：请检查网络"
-            });
-          }.bind(this)
-        );
-      // 获取角色列表
+
+      this.editForm.username = obj.userName;
+      this.editForm.password = obj.passWord;
+      this.editForm.isLock = obj.isLock;
+      this.editForm.role = obj.roleId;
       this.getRoleList();
+      this.editFormVisible = true;
+
     },
     handleAdd() {
       this.addFormVisible = true;
@@ -326,23 +310,20 @@ export default {
           //判断是否填写完整  --true
           this.$confirm("确认提交吗？", "提示", {}).then(() => {
             this.editLoading = true;
-            var para = Object.assign({}, this.editForm);
-            if (para.Password.length > 20) {
-            } else {
-              para.Password = md5(para.Password);
-            }
-            // 将token传入参数中
-            para.Token = getCookie("token");
+
             // 发保存请求
             this.$http
-              .get("/hxmback/api/Admin/Edit", {
-                params: para
+              .post("/app/user/editAdmin", {
+                'username' : this.editForm.username,
+                'password' : md5(this.editForm.password),
+                'roles' : this.editForm.role,
+                'isLock' : this.editForm.isLock
               })
               .then(
                 function(response) {
                   this.editLoading = false;
-                  var status = response.data.Status;
-                  if (status === 1) {
+                  var returnCode = response.data.returnCode;
+                  if (returnCode == '1111') {
                     // 表单重置
                     this.$refs["editForm"].resetFields();
                     this.editFormVisible = false;
@@ -351,7 +332,7 @@ export default {
                     this.$message({
                       showClose: true,
                       type: "warning",
-                      message: response.data.Result
+                      message: response.data.returnMessage
                     });
                     setTimeout(() => {
                       tt.$router.push({
@@ -362,7 +343,7 @@ export default {
                     this.$message({
                       showClose: true,
                       type: "warning",
-                      message: response.data.Result
+                      message: response.data.returnMessage
                     });
                   }
                 }.bind(this)
@@ -386,33 +367,28 @@ export default {
           //判断是否填写完整  --true
           this.$confirm("确认提交吗？", "提示", {}).then(() => {
             this.addLoading = true;
-            //NProgress.start();
-            var para = Object.assign({}, this.addForm);
-            if (para.Password.length > 20) {
-            } else {
-              para.Password = md5(para.Password);
-            }
-            // 将token传入参数中
-            para.Token = getCookie("token");
+
             // 发保存请求
             this.$http
-              .get("/hxmback/api/Admin/Add", {
-                params: para
+              .post("/app/user/addAdmin", {
+                'username' : this.addForm.username,
+                'password' : md5(this.addForm.password),
+                'role' : this.addForm.role
               })
               .then(
                 function(response) {
                   this.addLoading = false;
-                  var status = response.data.Status;
-                  if (status === 1) {
+                  var returnCode = response.data.returnCode;
+                  if (returnCode == '1111') {
                     // 表单重置
                     this.$refs["addForm"].resetFields();
                     this.addFormVisible = false;
                     this.getInfo();
-                  } else if (status === 40001) {
+                  } else if (returnCode === 40001) {
                     this.$message({
                       showClose: true,
                       type: "warning",
-                      message: response.data.Result
+                      message: response.data.returnMessage
                     });
                     setTimeout(() => {
                       tt.$router.push({
@@ -423,7 +399,7 @@ export default {
                     this.$message({
                       showClose: true,
                       type: "warning",
-                      message: response.data.Result
+                      message: response.data.returnMessage
                     });
                   }
                 }.bind(this)
@@ -443,6 +419,10 @@ export default {
     }
   },
   mounted() {
+    var _this = this;
+    if(sessionStorage.getItem("username") == "" || sessionStorage.getItem("username") == null){
+      _this.$router.push({ path: "/login"});
+    }
     this.getInfo();
   }
 };

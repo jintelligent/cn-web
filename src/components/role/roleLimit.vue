@@ -18,24 +18,25 @@
         <tr>
           <td>权限</td>
           <td>
-            <ul class="miantable">
-              <li v-for="(items,index) in list" :key="index">
-                <span @click="togglemun(index)">
-                    <i :class="isopen==index?'el-icon-arrow-right':'el-icon-arrow-down'"></i>
-                    <a>{{items.Menu}}</a>
-                </span>
-                <ul class="seconuntable" v-if="isopen==index">
-                  <li v-for="(iten,ii) in items.SubMenu" :key="ii">
-                    <div class="relativedfg">
-                        <i class="el-icon-d-arrow-right"></i>
-                        <a>{{iten.SubMenu}}</a>
-                        <i @click="huoqu($parent.index,index,items.MenuID,iten.SubMenuID,iten.IsSelect)"
-                         :class="iten.IsSelect?'el-icon-circle-check-outline':'el-icon-circle-close-outline'" style="cursor: pointer;"></i>
-                    </div>
-                  </li>
-                </ul>
-              </li>
-            </ul>
+            
+            <el-form :inline="true">
+              <el-form-item>
+                <el-input placeholder="输入关键字进行过滤" v-model="filterText"></el-input>
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" @click="powerSave()">保存权限</el-button>
+              </el-form-item>
+            </el-form>
+            <el-tree
+              :data="treeData"
+              show-checkbox
+              node-key="id"
+              accordion
+              :default-checked-keys="powerList"
+              :props="defaultProps"
+              :filter-node-method="filterNode"
+              ref="tree2">
+            </el-tree>
           </td>
         </tr>
       </tbody>
@@ -45,34 +46,92 @@
 </template>
 <script>
 export default {
+  watch: {
+      filterText(val) {
+        this.$refs.tree2.filter(val);
+      }
+    },
   data() {
     return {
-      list: [],
+      powerList: [],
+      rolesId: '',
+      filterText: '',
       name:"",
-      isopen: -1
+      treeData: [],
+      defaultProps: {
+        children: 'children',
+        label: 'label'
+      }
     };
   },
   methods: {
+     filterNode(value, data) {
+        if (!value) return true;
+        return data.label.indexOf(value) !== -1;
+      },
+      powerSave() {
+        this.$http
+        .post("/app/roles/updatePower", {
+          'menus' : this.$refs.tree2.getCheckedKeys(),
+          'rolesId' : this.rolesId
+        })
+        .then(
+          function(response) {
+            var returnCode = response.data.returnCode;
+            console.log(returnCode)
+            if (returnCode == '1111') {
+              location. reload();
+              this.$notify.success({
+              title: "提示",
+              message: "权限修改成功！"
+            });
+              this.getInfo(this.rolesId);
+            } else if (returnCode === 40001) {
+              this.$message({
+                showClose: true,
+                type: "warning",
+                message: response.data.returnMessage
+              });
+              setTimeout(() => {
+                tt.$router.push({
+                  path: "/login"
+                });
+              }, 1500);
+            }
+          }.bind(this)
+        )
+        // 请求error
+        .catch(
+          function(error) {
+            console.log(error)
+            this.$notify.error({
+              title: "错误",
+              message: "错误：请检查网络"
+            });
+          }.bind(this)
+        );
+      },
     /*
            1、获取列表 渲染列表
         */
     getInfo(id) {
       this.$http
-        .get("/hxmback/api/Role/GetMenuJurisdiction", {
-          params: {
-            RoleID: id
-          }
+        .post("/app/roles/selectPower", {
+          'parentId' : 0,
+          'rolesId' : this.rolesId
         })
         .then(
           function(response) {
-            var status = response.data.Status;
-            if (status === 1) {
-              this.list = response.data.Result;
+            var returnCode = response.data.returnCode;
+            if (returnCode == '1111') {
+              this.treeData = response.data.result.tree;
+              this.powerList = response.data.result.powers;
+              
             } else if (status === 40001) {
               this.$message({
                 showClose: true,
                 type: "warning",
-                message: response.data.Result
+                message: response.data.returnMessage
               });
               setTimeout(() => {
                 tt.$router.push({
@@ -92,47 +151,14 @@ export default {
           }.bind(this)
         );
     },
-    togglemun(index) {
-      if (this.isopen == index) {
-        this.isopen = -1;
-      } else {
-        this.isopen = index;
-      }
-    },
-    huoqu(parentindex, $index, MenuID, SubMenuID, IsSelect) {
-      var RoleID = window.location.href.split("id=")[1].split("&rolename")[0];
-      this.$http
-        .get("/hxmback/api/Role/AddMenuJurisdiction", {
-          params: {
-            MenuID: MenuID,
-            SubMenuID: SubMenuID,
-            RoleID: RoleID,
-            Token: getCookie("token")
-          }
-        })
-        .then(
-          function(response) {
-            var status = response.data.Status;
-            if (status === 1) {
-              this.getInfo(RoleID);
-            } else if (status === 40001) {
-              this.$message({
-                showClose: true,
-                type: "warning",
-                message: response.data.Result
-              });
-              setTimeout(() => {
-                tt.$router.push({
-                  path: "/login"
-                });
-              }, 1500);
-            }
-          }.bind(this)
-        );
-    }
   },
   mounted() {
+    var _this = this;
+    if(sessionStorage.getItem("username") == "" || sessionStorage.getItem("username") == null){
+      _this.$router.push({ path: "/login"});
+    }
     var id = window.location.href.split("id=")[1].split("&rolename")[0];
+    this.rolesId = decodeURI(id);
     var name = window.location.href.split("&rolename=")[1];
     this.name = decodeURI(name);
     this.getInfo(id);
