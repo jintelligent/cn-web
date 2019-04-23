@@ -54,7 +54,7 @@
 </template>
 <script>
 import md5 from "js-md5";
-
+import { selectRoles, updateRoles, insertRoles } from '@/axios/api';
 export default {
   data() {
     return {
@@ -108,43 +108,17 @@ export default {
          4、分页
       */
     getInfo() {
-      this.$http
-        .get("/app/roles/select")
-        .then(
-          function(response) {
-            var returnCode = response.data.returnCode;
-            if (returnCode == '1111') {
-              this.roleList = response.data.result;
-              //this.pageCount = response.data.Result.PageIndex;
-            } else if (returnCode === 40001) {
-              this.$message({
-                showClose: true,
-                type: "warning",
-                message: response.data.returnMessage
-              });
-              setTimeout(() => {
-                tt.$router.push({
-                  path: "/login"
-                });
-              }, 1500);
-            }else {
-                this.$message({
-                showClose: true,
-                type: "warning",
-                message: response.data.returnMessage
-                });
-            }
-          }.bind(this)
-        )
-        // 请求error
-        .catch(
-          function(error) {
-            this.$notify.error({
-              title: "错误",
-              message: "错误：请检查网络"
-            });
-          }.bind(this)
-        );
+      //调用接口
+        selectRoles().then(res => {
+          //控制跳转
+          if(res.returnCode == '1111'){
+            this.roleList = res.result;        
+          }else if(res.returnCode == '0000'){
+            this.$message.warning(res.returnMessage);
+          }else{
+            this.$message.error(res.message);
+          }
+        })
     },
     CreateTime(row, time) {
       var date = row[time.property];
@@ -154,13 +128,6 @@ export default {
       var lock = row[lock.property];
       return lock ? "是" : "否";
     },
-    /*
-        1、跳转设置页面,
-        2、点击管理员列表的编辑，弹出模态框
-        3、点击新增管理严，弹出模态框
-        4、保存修改
-        5、保存添加
-      */
 
     handleSetting(index, row) {
       var obj = Object.assign({}, row);
@@ -183,51 +150,24 @@ export default {
           this.$confirm("确认提交吗？", "提示", {}).then(() => {
             this.editLoading = true;
             var para = Object.assign({}, this.editForm);
-
-            // 发保存请求
-            this.$http
-              .post("/app/roles/edit", {
+          //调用接口
+          updateRoles({
                   'id': para.id,
                   'name': para.name,
-              })
-              .then(
-                function(response) {
+            }).then(res => {
+              //控制跳转
+              if(res.returnCode == '1111'){
+                  // 表单重置
+                  this.$refs["editForm"].resetFields();
+                  this.editFormVisible = false;
                   this.editLoading = false;
-                  var returnCode = response.data.returnCode;
-                  if (returnCode == '1111') {
-                    // 表单重置
-                    this.$refs["editForm"].resetFields();
-                    this.editFormVisible = false;
-                    this.getInfo();
-                  } else if (returnCode === 40001) {
-                    this.$message({
-                      showClose: true,
-                      type: "warning",
-                      message: response.data.returnMessage
-                    });
-                    setTimeout(() => {
-                      tt.$router.push({
-                        path: "/login"
-                      });
-                    }, 1500);
-                  } else {
-                    this.$message({
-                      showClose: true,
-                      type: "warning",
-                      message: response.data.returnMessage
-                    });
-                  }
-                }.bind(this)
-              )
-              // 请求error
-              .catch(
-                function(error) {
-                  this.$notify.error({
-                    title: "错误",
-                    message: "错误：请检查网络"
-                  });
-                }.bind(this)
-              );
+                  this.getInfo();       
+              }else if(res.returnCode == '0000'){
+                  this.$message.warning(res.returnMessage);
+              }else{
+                this.$message.error(res.message);
+              }
+            })
           });
         }
       });
@@ -238,52 +178,23 @@ export default {
           //判断是否填写完整  --true
           this.$confirm("确认提交吗？", "提示", {}).then(() => {
             this.addLoading = true;
-            // var para = Object.assign({}, this.addForm);
-            // // 将token传入参数中
-            // para.Token = getCookie("token");
-            // 发保存请求
-            this.$http
-              .post("/app/roles/save", {
+            //调用接口
+          insertRoles({
                 'name' : this.addForm.name
-              })
-              .then(
-                function(response) {
-                  this.addLoading = false;
-                  var returnCode = response.data.returnCode;
-                  if (returnCode == '1111') {
+            }).then(res => {
+              this.addLoading = false;
+              //控制跳转
+              if(res.returnCode == '1111'){
                     // 表单重置
                     this.$refs["addForm"].resetFields();
                     this.addFormVisible = false;
                     this.getInfo();
-                  } else if (returnCode === 40001) {
-                    this.$message({
-                      showClose: true,
-                      type: "warning",
-                      message: response.data.returnMessage
-                    });
-                    setTimeout(() => {
-                      tt.$router.push({
-                        path: "/login"
-                      });
-                    }, 1500);
-                  } else {
-                    this.$message({
-                      showClose: true,
-                      type: "warning",
-                      message: response.data.returnMessage
-                    });
-                  }
-                }.bind(this)
-              )
-              // 请求error
-              .catch(
-                function(error) {
-                  this.$notify.error({
-                    title: "错误",
-                    message: "错误：请检查网络"
-                  });
-                }.bind(this)
-              );
+              }else if(res.returnCode == '0000'){
+                  this.$message.warning(res.returnMessage);
+              }else{
+                this.$message.error(res.message);
+              }
+            })
           });
         }
       });

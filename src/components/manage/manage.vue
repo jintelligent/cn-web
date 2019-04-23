@@ -97,7 +97,7 @@
 </template>
 <script>
 import md5 from "js-md5";
-
+import { selectAdmin, updateAdmin, insertAdmin, selectRoles } from '@/axios/api';
 export default {
   data() {
     return {
@@ -180,43 +180,17 @@ export default {
          3、格式化是否锁定
       */
     getInfo() {
-      this.$http
-        .get("/app/user/selAllUser")
-        .then(
-          function(response) {
-            var returnCode = response.data.returnCode;
-            if (returnCode == '1111') {
-              this.manageList = response.data.result;
-              //this.pageCount = response.data.Result.PageIndex;
-            } else if (status === 40001) {
-              this.$message({
-                showClose: true,
-                type: "warning",
-                message: response.data.Result
-              });
-              setTimeout(() => {
-                tt.$router.push({
-                  path: "/login"
-                });
-              }, 1500);
-            }else {
-                this.$message({
-                showClose: true,
-                type: "warning",
-                message: response.data.returnMessage
-                });
-            }
-          }.bind(this)
-        )
-        // 请求error
-        .catch(
-          function(error) {
-            this.$notify.error({
-              title: "错误",
-              message: "错误：请检查网络"
-            });
-          }.bind(this)
-        );
+      //调用接口
+      selectAdmin().then(res => {
+          //控制跳转
+          if(res.returnCode == '1111'){
+              this.manageList = res.result;     
+          }else if(res.returnCode == '0000'){
+            this.$message.warning(res.returnMessage);
+          }else{
+            this.$message.error(res.message);
+          }
+      })
     },
 
     IsLock(row, lock) {
@@ -249,43 +223,17 @@ export default {
         5、保存添加
       */
     getRoleList() {
-      // 获取角色列表
-      this.$http
-        .get("/app/roles/select", {})
-        .then(
-          function(response) {
-            var returnCode = response.data.returnCode;
-            if (returnCode == '1111') {
-              this.roleList = response.data.result;
-            } else if (returnCode === 40001) {
-              this.$message({
-                showClose: true,
-                type: "warning",
-                message: response.data.returnMessage
-              });
-              setTimeout(() => {
-                tt.$router.push({
-                  path: "/login"
-                });
-              }, 1500);
-            }else {
-                this.$message({
-                showClose: true,
-                type: "warning",
-                message: response.data.returnMessage
-                });
-            }
-          }.bind(this)
-        )
-        // 请求error
-        .catch(
-          function(error) {
-            this.$notify.error({
-              title: "错误",
-              message: "错误：请检查网络"
-            });
-          }.bind(this)
-        );
+      //调用接口
+      selectRoles().then(res => {
+          //控制跳转
+          if(res.returnCode == '1111'){
+              this.roleList = res.result;    
+          }else if(res.returnCode == '0000'){
+            this.$message.warning(res.returnMessage);
+          }else{
+            this.$message.error(res.message);
+          }
+      })
     },
 
     handleEdit(index, row) {
@@ -309,54 +257,27 @@ export default {
         if (valid) {
           //判断是否填写完整  --true
           this.$confirm("确认提交吗？", "提示", {}).then(() => {
-            this.editLoading = true;
-
-            // 发保存请求
-            this.$http
-              .post("/app/user/editAdmin", {
-                'username' : this.editForm.username,
-                'password' : md5(this.editForm.password),
-                'roles' : this.editForm.role,
-                'isLock' : this.editForm.isLock
-              })
-              .then(
-                function(response) {
-                  this.editLoading = false;
-                  var returnCode = response.data.returnCode;
-                  if (returnCode == '1111') {
-                    // 表单重置
-                    this.$refs["editForm"].resetFields();
-                    this.editFormVisible = false;
-                    this.getInfo();
-                  } else if (status === 40001) {
-                    this.$message({
-                      showClose: true,
-                      type: "warning",
-                      message: response.data.returnMessage
-                    });
-                    setTimeout(() => {
-                      tt.$router.push({
-                        path: "/login"
-                      });
-                    }, 1500);
-                  } else {
-                    this.$message({
-                      showClose: true,
-                      type: "warning",
-                      message: response.data.returnMessage
-                    });
-                  }
-                }.bind(this)
-              )
-              // 请求error
-              .catch(
-                function(error) {
-                  this.$notify.error({
-                    title: "错误",
-                    message: "错误：请检查网络"
-                  });
-                }.bind(this)
-              );
+          this.editLoading = true;
+          //调用接口
+          updateAdmin({
+              'username' : this.editForm.username,
+              'password' : md5(this.editForm.password),
+              'roles' : this.editForm.role,
+              'isLock' : this.editForm.isLock
+            }).then(res => {
+              this.editLoading = false;
+              //控制跳转
+              if(res.returnCode == '1111'){
+                // 表单重置
+                this.$refs["editForm"].resetFields();
+                this.editFormVisible = false;
+                this.getInfo();     
+              }else if(res.returnCode == '0000'){
+                this.$message.warning(res.returnMessage);
+              }else{
+                this.$message.error(res.message);
+              }
+            })
           });
         }
       });
@@ -366,63 +287,32 @@ export default {
         if (valid) {
           //判断是否填写完整  --true
           this.$confirm("确认提交吗？", "提示", {}).then(() => {
-            this.addLoading = true;
-
-            // 发保存请求
-            this.$http
-              .post("/app/user/addAdmin", {
-                'username' : this.addForm.username,
-                'password' : md5(this.addForm.password),
-                'role' : this.addForm.role
-              })
-              .then(
-                function(response) {
-                  this.addLoading = false;
-                  var returnCode = response.data.returnCode;
-                  if (returnCode == '1111') {
-                    // 表单重置
-                    this.$refs["addForm"].resetFields();
-                    this.addFormVisible = false;
-                    this.getInfo();
-                  } else if (returnCode === 40001) {
-                    this.$message({
-                      showClose: true,
-                      type: "warning",
-                      message: response.data.returnMessage
-                    });
-                    setTimeout(() => {
-                      tt.$router.push({
-                        path: "/login"
-                      });
-                    }, 1500);
-                  } else {
-                    this.$message({
-                      showClose: true,
-                      type: "warning",
-                      message: response.data.returnMessage
-                    });
-                  }
-                }.bind(this)
-              )
-              // 请求error
-              .catch(
-                function(error) {
-                  this.$notify.error({
-                    title: "错误",
-                    message: "错误：请检查网络"
-                  });
-                }.bind(this)
-              );
+          this.addLoading = true;
+          //调用接口
+          insertAdmin({
+              'username' : this.addForm.username,
+              'password' : md5(this.addForm.password),
+              'role' : this.addForm.role
+            }).then(res => {
+              this.editLoading = false;
+              //控制跳转
+              if(res.returnCode == '1111'){
+                // 表单重置
+                this.$refs["addForm"].resetFields();
+                this.addFormVisible = false;
+                this.getInfo();  
+              }else if(res.returnCode == '0000'){
+                this.$message.warning(res.returnMessage);
+              }else{
+                this.$message.error(res.message);
+              }
+            })
           });
         }
       });
     }
   },
   mounted() {
-    var _this = this;
-    if(sessionStorage.getItem("username") == "" || sessionStorage.getItem("username") == null){
-      _this.$router.push({ path: "/login"});
-    }
     this.getInfo();
   }
 };

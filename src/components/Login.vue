@@ -58,10 +58,9 @@
 </template>
 
 <script>
-// import { login, getAdminInfo } from "@/api/getData";
-// import { mapActions, mapState } from "vuex";
 import md5 from "js-md5";
 import axios from 'axios';
+import { login, register } from '@/axios/api';// 导入我们的api接口
 export default {
   data() {
     return {
@@ -94,68 +93,50 @@ export default {
       }
     };
   },
-  mounted() {},
-  computed: {},
+
   methods: {
-
-    // submitForm(formName) {
-      // var tt = this;
+      
       async submitForm (formName) {
-
-      try {
-        // 表单验证
+        //表单验证
         await this.$refs[formName].validate()
-
-        //发送登录验证请求
-        const res = await axios.post(
-          '/app/user/login/',
-          {
-            'userName': this.loginForm.username,
-            'passWord': md5(this.loginForm.password)
-          })
-
-        //控制跳转
-        if(res.data.returnCode == '1111'){
-          sessionStorage.setItem("username", this.loginForm.username)
-          this.$router.push({path: '/home'})
-          
-        }else{
-          this.$message.error(res.data.returnMessage);
-        }
-        
-      } catch (err) {
-        console.log(err)
-      }
+        login({
+          'userName': this.loginForm.username,
+          'passWord': md5(this.loginForm.password)
+        }).then(res => {
+          console.log(res)
+          //控制跳转
+          if(res.returnCode == '1111'){
+            sessionStorage.setItem("username", this.loginForm.username)
+            sessionStorage.setItem("token", res.token)
+            this.$router.push({path: '/home'})
+            
+          }else if(res.returnCode == '0000'){
+            this.$message.warning(res.returnMessage);
+          }else{
+            this.$message.error(res.returnMessage);
+          }
+        })
     },
 
     async resetForm (formName) {
 
-      try {
         // 表单验证
         await this.$refs[formName].validate()
-
-        //发送登录验证请求
-        const res = await axios.post(
-          '/app/user/register/',
-          {
+        register({
             'userName': this.registerForm.username,
             'passWord': md5(this.registerForm.password),
             'email': this.registerForm.email
-          })
-
-        //控制跳转
-        if(res.data.returnCode == '0000'){
-          this.$message.error(res.data.returnMessage);
-        }else{
-          this.$message.success(res.data.returnMessage);
+        }).then(res => {
           console.log(res)
-          //sessionStorage.setItem("username", this.loginForm.username)
-          //this.$router.push({path: '/home'})
-        }
-        
-      } catch (err) {
-        console.log(err)
-      }
+          //控制跳转
+          if(res.returnCode == '1111'){
+            this.$message.error(res.returnMessage);           
+          }else if(res.returnCode == '0000'){
+            this.$message.warning(res.returnMessage);
+          }else{
+            this.$message.error(res.returnMessage);
+          }
+        })
     }
   }
 };

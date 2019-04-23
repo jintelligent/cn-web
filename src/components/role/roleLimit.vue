@@ -45,6 +45,9 @@
   </div>
 </template>
 <script>
+
+import { selectPower, updatePower } from '@/axios/api';
+
 export default {
   watch: {
       filterText(val) {
@@ -65,98 +68,51 @@ export default {
     };
   },
   methods: {
-     filterNode(value, data) {
+
+      filterNode(value, data) {
         if (!value) return true;
         return data.label.indexOf(value) !== -1;
       },
+
       powerSave() {
-        this.$http
-        .post("/app/roles/updatePower", {
+        //调用接口
+        updatePower({
           'menus' : this.$refs.tree2.getCheckedKeys(),
           'rolesId' : this.rolesId
+        }).then(res => {
+          //控制跳转
+          if(res.returnCode == '1111'){
+            this.$message.success(res.returnMessage);
+            location. reload();          
+          }else if(res.returnCode == '0000'){
+            this.$message.warning(res.returnMessage);
+          }else{
+            this.$message.error(res.message);
+          }
         })
-        .then(
-          function(response) {
-            var returnCode = response.data.returnCode;
-            console.log(returnCode)
-            if (returnCode == '1111') {
-              location. reload();
-              this.$notify.success({
-              title: "提示",
-              message: "权限修改成功！"
-            });
-              this.getInfo(this.rolesId);
-            } else if (returnCode === 40001) {
-              this.$message({
-                showClose: true,
-                type: "warning",
-                message: response.data.returnMessage
-              });
-              setTimeout(() => {
-                tt.$router.push({
-                  path: "/login"
-                });
-              }, 1500);
-            }
-          }.bind(this)
-        )
-        // 请求error
-        .catch(
-          function(error) {
-            console.log(error)
-            this.$notify.error({
-              title: "错误",
-              message: "错误：请检查网络"
-            });
-          }.bind(this)
-        );
       },
     /*
            1、获取列表 渲染列表
         */
     getInfo(id) {
-      this.$http
-        .post("/app/roles/selectPower", {
+      //调用接口
+        selectPower({
           'parentId' : 0,
           'rolesId' : this.rolesId
+        }).then(res => {
+          //控制跳转
+          if(res.returnCode == '1111'){
+              this.treeData = res.result.tree;
+              this.powerList = res.result.powers;         
+          }else if(res.returnCode == '0000'){
+            this.$message.warning(res.returnMessage);
+          }else{
+            this.$message.error(res.message);
+          }
         })
-        .then(
-          function(response) {
-            var returnCode = response.data.returnCode;
-            if (returnCode == '1111') {
-              this.treeData = response.data.result.tree;
-              this.powerList = response.data.result.powers;
-              
-            } else if (status === 40001) {
-              this.$message({
-                showClose: true,
-                type: "warning",
-                message: response.data.returnMessage
-              });
-              setTimeout(() => {
-                tt.$router.push({
-                  path: "/login"
-                });
-              }, 1500);
-            }
-          }.bind(this)
-        )
-        // 请求error
-        .catch(
-          function(error) {
-            this.$notify.error({
-              title: "错误",
-              message: "错误：请检查网络"
-            });
-          }.bind(this)
-        );
     },
   },
   mounted() {
-    var _this = this;
-    if(sessionStorage.getItem("username") == "" || sessionStorage.getItem("username") == null){
-      _this.$router.push({ path: "/login"});
-    }
     var id = window.location.href.split("id=")[1].split("&rolename")[0];
     this.rolesId = decodeURI(id);
     var name = window.location.href.split("&rolename=")[1];

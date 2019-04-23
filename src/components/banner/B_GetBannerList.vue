@@ -181,7 +181,7 @@ export default {
         )
         .then(
           function(response) {
-            var status = response.data.Status;
+            var status = response.status;
             if (status === 1) {
               this.roleList = response.data.Result.List;
               this.pageCount = response.data.Result.Page;

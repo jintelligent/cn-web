@@ -24,6 +24,9 @@
                 </div>
             </div>
         </div>
+<!--         <el-badge :value="200" :max="99" class="item">
+          <i class="el-icon-date"></i>
+        </el-badge> -->
         <div style="float: right;color:#fff; font-size: 12px;margin-right:50px;">
           <el-dropdown >
             <span class="el-dropdown-link" style="color:#fff;">
@@ -114,7 +117,7 @@
 
 import md5 from "js-md5";
 import axios from 'axios';
-
+import { changePassWord, selectMenus } from '@/axios/api';
 export default {
   data: function() {
     var validatePass = (rule, value, callback) => {
@@ -201,56 +204,20 @@ export default {
       this.collapsed = true;
     }
     
-    // if (getCookie("token")) {
-      this.$http
-        .post("/app/menus/get"
-        , {
-          'username' : sessionStorage.getItem("username")
-        }
-        )
-        .then(
-          function(response) {
-            var returnCode = response.data.returnCode;
-            if (returnCode == "1111") {
-              this.menuList = response.data.result;
-              // localStorage.setItem(
-              //   "menulist",
-              //   JSON.stringify(response.data.Result)
-              // );
-            } else if (returnCode === 40001) {
-              this.$message({
-                showClose: true,
-                type: "warning",
-                message: response.data.returnMessage
-              });
-              setTimeout(() => {
-                tt.$router.push({
-                  path: "/login"
-                });
-              }, 1500);
-            }
-          }.bind(this)
-        )
-        .catch(
-          function(error) {
-            this.$notify.error({
-              title: "错误",
-              message: "错误：请检查网络"
-            });
-          }.bind(this)
-        );
-    // } else {
-    //   this.$message({
-    //     showClose: true,
-    //     type: "warning",
-    //     message: "请先登陆"
-    //   });
-    //   setTimeout(() => {
-    //     tt.$router.push({
-    //       path: "/login"
-    //     });
-    //   }, 1500);
-    // }
+    //调用接口
+        selectMenus({
+            'username': sessionStorage.getItem("username")
+            }).then(res => {
+              this.editLoading = false;
+              //控制跳转
+              if(res.returnCode == '1111'){
+                this.menuList = res.result;    
+              }else if(res.returnCode == '0000'){
+                this.$message.warning(res.returnMessage);
+              }else{
+                this.$message.error(res.message);
+              }
+        })
   },
   methods: {
     showMarquee: function () {
@@ -262,31 +229,27 @@ export default {
             },500)},
     async submitForm (formName) {
 
-      try {
+
         // 表单验证
         await this.$refs[formName].validate()
-
-        //发送登录验证请求
-        const res = await axios.post(
-          '/app/user/changePass/',
-          {
+        //调用接口
+        changePassWord({
             'userName': sessionStorage.getItem("username"),
             'oldPass': md5(this.changeForm.oldPass),
             'newPass': md5(this.changeForm.newPass)
-          })
-
-        //控制跳转
-        if(res.data.returnCode == '1111'){
-          this.$message.warning(res.data.returnMessage);
-          this.$router.push({path: '/login'})
-          
-        }else{
-          this.$message.error(res.data.returnMessage);
-        }
-        
-      } catch (err) {
-        console.log(err)
-      }
+            }).then(res => {
+              this.editLoading = false;
+              //控制跳转
+              if(res.returnCode == '1111'){
+                // 表单重置
+                this.$message.warning(res.returnMessage);
+                this.$router.push({path: '/login'})    
+              }else if(res.returnCode == '0000'){
+                this.$message.warning(res.returnMessage);
+              }else{
+                this.$message.error(res.message);
+              }
+            })
     },
     // 	index: 选中菜单项的 index, indexPath: 选中菜单项的 index path
     handleSelect(index) {
@@ -397,5 +360,10 @@ export default {
 
 .red {
   color: #FF0101;
+}
+
+.item {
+  margin-top: 10px;
+  margin-right: 20px;
 }
 </style>

@@ -1,4 +1,4 @@
-var mainurl = "http://hxm.nbxuanma.com"
+var mainurl = "http://140.143.74.201:8888"
 
 function setCookie(name, value) {
 	var Days = 30;

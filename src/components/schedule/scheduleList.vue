@@ -147,6 +147,9 @@
 </template>
 <script>
 import axios from 'axios';
+// 导入接口
+import { selAllSchedule, delSchedule, saveSchedule, updSchedule } from '@/axios/api';
+
 export default {
   data() {
     return {
@@ -229,71 +232,43 @@ export default {
     },
 
     getScheduleList(){
-      try {
-        var _this = this
-        //发送登录验证请求
-        const res = axios.post(
-          '/app/schedule/selectAll',
-          {
-            'username': sessionStorage.getItem("username")
-          }).then(
-          function(response) {
-            var returnCode = response.data.returnCode;
-            if (returnCode == "1111") {
-                 _this.scheduleList = response.data.result
-                 console.log(response.data.result)
-                 _this.pageCount = response.data.result.length
-            //令牌失效
-            } else if (status === 40001) {
-                 this.$message({
-                 showClose: true,
-                 type: "warning",
-                 message: response.data.returnMessage
-                });
-               setTimeout(() => {
-                 tt.$router.push({
-                 path: "/login"
-                 });
-                }, 1500);
+      var _this = this
+      selAllSchedule({
+          'username': sessionStorage.getItem("username"),
+        }).then(res => {
+          //控制跳转
+          if(res.returnCode == '1111'){
+            _this.scheduleList = res.result
+            console.log(res.result)
+            _this.pageCount = res.result.length
+            
+          }else if(res.returnCode == '0000'){
+            this.$message.warning(res.returnMessage);
+          }else{
+            this.$message.error(res.message);
+          }
+        })
 
-            } else {
-                this.$message({
-                showClose: true,
-                type: "warning",
-                message: response.data.returnMessage
-                });
-            }
-           
-            //ss.pageCount = response.data.result.length();
-          })
-        
-      } catch (err) {
-        console.log(err)
-      }
     },
 
     //关键字搜索
-    getUsers() {
-      //this.getInfo();
-      // console.log(this.filters)
-    },
+    getUsers() {},
     // 分页
     handleCurrentChange(val) {
       this.currentPage = val
-      //this.getInfo();
     },
 
     handleSizeChange(val) {
       this.pageSize = val
     },
 
-    /*
-          1、添加编辑时获取角色列表，渲染下拉菜单
-          2、点击管理员列表的编辑，弹出模态框
-          3、点击新增管理严，弹出模态框
-          4、保存修改
-          5、保存添加
-        */
+    /**
+     * 
+     * 加载编辑框中信息
+     * @param  {[type]} index [description]
+     * @param  {[type]} row   [description]
+     * @return {[type]}       [description]
+     */
     handleEdit(index, row) {
       var obj = Object.assign({}, row);
       console.log(obj);
@@ -304,58 +279,24 @@ export default {
       this.editFormVisible = true;
     },
 
+    //删除按钮
     handleDelete(index, row) {
       // 发删除请求
        var obj = Object.assign({}, row);
-
-            this.$http
-              .post("/app/schedule/delete", {
-                'id' : obj.id
-              })
-              .then(
-                function(response) {
-                  this.editLoading = false;
-                  var returnCode = response.data.returnCode;
-                  if (returnCode == "1111") {
-                    this.$message({
-                      showClose: true,
-                      type: "success",
-                      message: response.data.returnMessage
-                    });
-                    // 表单重置
-                    this.getScheduleList();
-                  //令牌失效
-                  } else if (returnCode === 40001) {
-                    this.$message({
-                      showClose: true,
-                      type: "warning",
-                      message: response.data.returnMessage
-                    });
-                    setTimeout(() => {
-                      tt.$router.push({
-                        path: "/login"
-                      });
-                    }, 1500);
-
-                  } else {
-                    this.$message({
-                      showClose: true,
-                      type: "warning",
-                      message: response.data.returnMessage
-                    });
-                  }
-                }.bind(this)
-              )
-              // 请求error
-              .catch(
-                function(error) {
-                  console.log(error)
-                  this.$notify.error({
-                    title: "错误",
-                    message: "错误：请检查网络"
-                  });
-                }.bind(this)
-              );
+       delSchedule({
+          'id' : obj.id
+        }).then(res => {
+          //控制跳转
+          if(res.returnCode == '1111'){
+            this.$message.success(res.returnMessage);
+            // 表单重置
+            this.getScheduleList();            
+          }else if(res.returnCode == '0000'){
+            this.$message.warning(res.returnMessage);
+          }else{
+            this.$message.error(res.message);
+          }
+        })
     },
 
     editSubmit() {
@@ -364,56 +305,28 @@ export default {
           //判断是否填写完整  --true
           this.$confirm("确认提交吗？", "提示", {}).then(() => {
             this.editLoading = true;
-
-            // 发保存请求
-            this.$http
-              .post("/app/schedule/edit", {
+            //调用接口
+            updSchedule({
                 'name' : this.editForm.name,
                 'priority' : this.editForm.priority,
                 'status' : this.editForm.status,
                 'remark' : this.editForm.remark,
                 'username' : sessionStorage.getItem("username")
-              })
-              .then(
-                function(response) {
-                  this.editLoading = false;
-                  var returnCode = response.data.returnCode;
-                  if (returnCode == "1111") {
-                    // 表单重置
+                }).then(res => {
+                  //控制跳转
+                  if(res.returnCode == '1111'){
+                    this.$message.success(res.returnMessage);
                     this.$refs["editForm"].resetFields();
                     this.editFormVisible = false;
-                    this.getScheduleList();
-                  //令牌失效
-                  } else if (status === 40001) {
-                    this.$message({
-                      showClose: true,
-                      type: "warning",
-                      message: response.data.returnMessage
-                    });
-                    setTimeout(() => {
-                      tt.$router.push({
-                        path: "/login"
-                      });
-                    }, 1500);
-
-                  } else {
-                    this.$message({
-                      showClose: true,
-                      type: "warning",
-                      message: response.data.returnMessage
-                    });
+                    this.editLoading = false;
+                    // 表单重置
+                    this.getScheduleList();            
+                  }else if(res.returnCode == '0000'){
+                    this.$message.warning(res.returnMessage);
+                  }else{
+                    this.$message.error(res.message);
                   }
-                }.bind(this)
-              )
-              // 请求error
-              .catch(
-                function(error) {
-                  this.$notify.error({
-                    title: "错误",
-                    message: "错误：请检查网络"
-                  });
-                }.bind(this)
-              );
+                })
           });
         }
       });
@@ -426,67 +339,31 @@ export default {
           //判断是否填写完整  --true
           this.$confirm("确认提交吗？", "提示", {}).then(() => {
             this.sendLoading = true;
-
-            // 发保存请求
-            this.$http
-              .post("/app/schedule/add", {
+            saveSchedule({
                  'name' : this.addForm.name,
                  'priority' : this.addForm.priority,
                  'status' : this.addForm.status,
                  'remark' : this.addForm.remark,
                  'username' : sessionStorage.getItem("username")
-              })
-              .then(
-                function(response) {
-                  this.addLoading = false;
-                  var returnCode = response.data.returnCode;
-
-                  if (returnCode == "1111") {
-                    // 表单重置
+                }).then(res => {
+                  //控制跳转
+                  if(res.returnCode == '1111'){
                     this.$refs["addForm"].resetFields();
                     this.addFormVisible = false;
-                    this.getScheduleList();
-
-                  } else if (returnCode === 40001) {
-                    this.$message({
-                      showClose: true,
-                      type: "warning",
-                      message: response.data.returnMessage
-                    });
-                    setTimeout(() => {
-                      tt.$router.push({
-                        path: "/login"
-                      });
-                    }, 1500);
-
-                  } else {
-                    this.$message({
-                      showClose: true,
-                      type: "warning",
-                      message: response.data.returnMessage
-                    });
+                    this.sendLoading = false;
+                    this.getScheduleList();           
+                  }else if(res.returnCode == '0000'){
+                    this.$message.warning(res.returnMessage);
+                  }else{
+                    this.$message.error(res.message);
                   }
-                }.bind(this)
-              )
-              // 请求error
-              .catch(
-                function(error) {
-                  this.$notify.error({
-                    title: "错误",
-                    message: "错误：请检查网络"
-                  });
-                }.bind(this)
-              );
+                })
           });
         }
       });
     }
   },
   mounted() {
-    var _this = this;
-    if(sessionStorage.getItem("username") == "" || sessionStorage.getItem("username") == null){
-      _this.$router.push({ path: "/login"});
-    }
     this.getScheduleList();
   }
 };
