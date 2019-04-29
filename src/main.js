@@ -19,6 +19,10 @@ Vue.use(VueQuillEditor)
 Vue.config.productionTip = false
 Vue.prototype.$http = axios;
 
+import echarts from 'echarts';
+Vue.prototype.$echarts = echarts
+import china from 'echarts/map/json/china.json'
+echarts.registerMap('china', china)
 
 /* eslint-disable no-new */
 new Vue({

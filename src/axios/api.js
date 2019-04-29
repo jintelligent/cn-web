@@ -3,10 +3,15 @@
  */
 import { get, post } from './http'
 
-//用户挂历
+//dashboard
+export const getChinaMap = p => post('/app/dashboard/selectChinaMap/', p); //登录
+
+//用户管理
 export const login = p => post('/app/user/login/', p); //登录
-export const register = p => post('/app/user/register', p); //登录
-export const changePassWord = p => post('/app/user/changePass', p); //登录
+export const register = p => post('/app/user/register', p); //注册
+export const changePassWord = p => post('/app/user/changePass', p); //更改密码
+export const selCommonUser = p => post('/app/user/selCommonUser', p); //查询所有普通用户
+
 
 //菜单管理
 export const selectMenus = p => post('/app/menus/get', p); //菜单查询
@@ -28,3 +33,9 @@ export const selectPower = p => post('/app/roles/selectPower', p); //查询权�
 export const selectAdmin = p => get('/app/user/selAllUser', p); //查询所有
 export const updateAdmin = p => post('/app/user/editAdmin', p); //更新
 export const insertAdmin = p => post('/app/user/addAdmin', p); //保存
+
+//我的成就-学习笔记
+export const selectNotes = p => get('/app/studyNotes/select', p); //查询所有
+export const updateNotes = p => post('/app/studyNotes/update', p); //更新
+export const insertNotes = p => post('/app/studyNotes/add', p); //保存
+export const deleteNotes = p => post('/app/studyNotes/delete', p); //删除

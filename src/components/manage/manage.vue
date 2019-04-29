@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-breadcrumb separator-class="el-icon-arrow-right" class="crumb">
-      <el-breadcrumb-item :to="{ path: '/' }">后台</el-breadcrumb-item>
+      <el-breadcrumb-item :to="{ path: '/dashboard' }">首页</el-breadcrumb-item>
       <el-breadcrumb-item :to="{ path: '/manage' }">管理员管理</el-breadcrumb-item>
     </el-breadcrumb>
     <!--检索条-->
@@ -292,7 +292,7 @@ export default {
           insertAdmin({
               'username' : this.addForm.username,
               'password' : md5(this.addForm.password),
-              'role' : this.addForm.role
+              'roles' : this.addForm.role
             }).then(res => {
               this.editLoading = false;
               //控制跳转

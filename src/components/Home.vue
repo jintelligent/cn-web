@@ -6,7 +6,7 @@
         <div style="float: left;height: 60px;">
           <img src="../assets/1.png" style="height:50px;width:50px;" alt="">
         </div>
-        <div v-if="welcome" style="float: left;height: 60px;color:#fff;width:500px">  菜鸟管理系统</div>
+        <div v-if="welcome" style="float: left;height: 60px;color:#fff;width:500px">  今天干了啥</div>
         <div style="float: left;height: 60px;width:450px;">
             <div class="marquee">
                 <!-- <div class="marquee_title">
@@ -76,10 +76,13 @@
       <aside class="el-theme--color">
         <div style="text-align:center">
           <i class="el-icon-setting" @click="closeNav()"></i>
-          <!-- <img src="../assets/logo.png" style="width:30px;height:30px;" alt="" @click="closeNav()"> -->
+          <!-- router 是否使用 vue-router 的模式，启用该模式会在激活导航时以 index 作为 path 进行路由跳转 -->
         </div>
-        <el-menu class="el-menu-vertical-demo el-theme--color" :default-active="$route.path" router :unique-opened='true'
-          @select="handleSelect" :collapse='iscloseNav'>
+        <el-menu class="el-menu-vertical-demo el-theme--color" 
+          :default-active="$route.path" 
+          router 
+          :unique-opened='true'
+          :collapse='iscloseNav'>
           <template v-for="(item,index) in menuList">
             <el-submenu :index="index+''" :key="index">
               <template slot="title">
@@ -93,20 +96,8 @@
       </aside>
       <!-- 右侧路由信息 -->
       <el-container>
-        <el-main v-if="collapsed">
+        <el-main>
           <router-view></router-view>
-        </el-main>
-        <el-main v-else>
-          <h2>后台管理</h2>
-          <h2>友情链接：</h2>
-          <ul>
-            <li>
-              <a href="https://vuejs.org" target="_blank">官网</a>
-            </li>
-            <li>
-              <a href="https://forum.vuejs.org" target="_blank">微博</a>
-            </li>
-          </ul>
         </el-main>
       </el-container>
     </el-container>
@@ -176,8 +167,6 @@ export default {
       changeFormVisible : false,
       defaultActiveIndex: ["0"],
       menuList: [],
-      userName: "",
-      collapsed: false,
       iscloseNav: false,
       welcome: true
     };
@@ -185,24 +174,12 @@ export default {
   created: function () {
     setInterval(this.showMarquee, 5000)
   },
-  mounted() {
-    var tt = this;
-    if(sessionStorage.getItem("username") == "" || sessionStorage.getItem("username") == null){
-      tt.$router.push({
-                  path: "/login"
-                });
-    }
-    
+  mounted() {   
     var w = window.innerWidth;
     if (w < 500) {
       this.welcome = false;
     }
-    this.userName = sessionStorage.getItem("username");
     var url = window.location.href;
-    if (url.split("#")[1] == "/") {
-    } else {
-      this.collapsed = true;
-    }
     
     //调用接口
         selectMenus({
@@ -234,8 +211,8 @@ export default {
         await this.$refs[formName].validate()
         //调用接口
         changePassWord({
-            'userName': sessionStorage.getItem("username"),
-            'oldPass': md5(this.changeForm.oldPass),
+            'username': sessionStorage.getItem("username"),
+            'password': md5(this.changeForm.oldPass),
             'newPass': md5(this.changeForm.newPass)
             }).then(res => {
               this.editLoading = false;
@@ -251,27 +228,17 @@ export default {
               }
             })
     },
-    // 	index: 选中菜单项的 index, indexPath: 选中菜单项的 index path
-    handleSelect(index) {
-      this.collapsed = true;
-      // this.defaultActiveIndex = [index];
-      // console.log(this.$route.path);
-    },
-    // 个人中心  修改密码
-    jumpTo(url) {
-      this.defaultActiveIndex = url;
-      this.$router.push(url);
-    },
+
     // 退出
     logout() {
-      let that = this;
+      let _this = this;
       this.$confirm("确认退出吗?", "提示", {
         confirmButtonClass: "el-button--warning"
       })
         .then(() => {
           //确认
-          that.loading = true;
-          delCookie("token");
+          _this.loading = true;
+          sessionStorage.removeItem("token");
           this.$router.push("/login");
         })
         .catch(() => {});

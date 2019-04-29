@@ -15,14 +15,16 @@ var role = resolve => require(['@/components/role/role.vue'], resolve)
 var roleLimit = resolve => require(['@/components/role/roleLimit.vue'], resolve)
 // var power = resolve => require(['../components/role/power.vue'], resolve)
 
-var B_GetBannerList = resolve => require(['../components/banner/B_GetBannerList.vue'], resolve)
-var P_GetProductList = resolve => require(['../components/productList/P_GetProductList.vue'], resolve)
-var productEdit = resolve => require(['../components/productList/productEdit.vue'], resolve)
-var productAdd = resolve => require(['../components/productList/productAdd.vue'], resolve)
+var user = resolve => require(['../components/user/userList.vue'], resolve)
+var notes = resolve => require(['../components/study_notes/study_notes.vue'], resolve)
+var notesEdit = resolve => require(['../components/study_notes/notesEdit.vue'], resolve)
+var notesAdd = resolve => require(['../components/study_notes/notesAdd.vue'], resolve)
 
 var upload = resolve => require(['@/components/file/upload.vue'], resolve)
 //待办事项
 var schedule = resolve => require(['@/components/schedule/scheduleList.vue'], resolve)
+
+var dashboard = resolve => require(['@/components/dashboard/dashboard.vue'], resolve)
 
 // 懒加载方式，当路由被访问的时候才加载对应组件
 Vue.use(Router)
@@ -51,16 +53,18 @@ export default new Router({
         { path: '/role', component: role, name: '权限管理' },
         { path: '/role/rolelimit/:id', component: roleLimit, name: '权限设置' },
         // banner
-        { path: '/B_GetBannerList', component: B_GetBannerList, name: 'Banner管理' },
+        { path: '/user', component: user, name: '人员管理' },
         // productList
-        { path: '/P_GetProductList', component: P_GetProductList, name: '商品列表' },
-        { path: '/P_GetProductList/productEdit/:id', component: productEdit, name: '商品编辑' },
-        { path: '/P_GetProductList/productAdd', component: productAdd, name: '商品添加' },        
+        { path: '/notes', component: notes, name: '学习笔记' },
+        { path: '/notes/notesEdit/:id', component: notesEdit, name: '编辑笔记' },
+        { path: '/notes/notesAdd', component: notesAdd, name: '添加笔记' },        
 
         //文件上传
         { path: '/upload', component: upload, name: '上传' },
         //待办事项
         { path: '/schedule', component: schedule, name: '日程安排' },
+
+        { path: '/dashboard', component: dashboard, name: '首页展示' },
         
       ]
     },

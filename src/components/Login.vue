@@ -3,10 +3,10 @@
 	  	<transition name="form-fade" mode="in-out">
 	  		<section class="form_contianer">
 		  		<div class="manage_tip">
-		  			<p>菜鸟管理</p>
+		  			<p>今天干了啥</p>
 		  		</div>
-          <el-tabs type="border-card">
-          <el-tab-pane label="登录">
+<!--           <el-tabs type="border-card">
+          <el-tab-pane label="登录"> -->
             <el-form :model="loginForm" :rules="rules" ref="loginForm">
               <el-form-item prop="username">
                 <el-input v-model="loginForm.username" placeholder="用户名"></el-input>
@@ -17,40 +17,42 @@
               <el-form-item>
                   <el-button type="primary" @click="submitForm('loginForm')" class="submit_btn">登录</el-button>
                 </el-form-item>
-               <!--  <el-form-item>
-                <router-link to="/home" class="to_forget" >忘记密码？</router-link>
-              </el-form-item> -->
+                 <el-form-item>
+                  <p>Tip:首次登陆将被注册</p>
+                <!-- <router-link to="#" class="to_forget" >Tip:首次登陆将被注册</router-link> -->
+              </el-form-item> 
             </el-form>
-          </el-tab-pane>
+<!--           </el-tab-pane> -->
+          <!--
           <el-tab-pane label="注册">
             <el-form :model="registerForm" :rules="rules2" ref="registerForm" >
               <el-form-item prop="username">
                 <el-input v-model="registerForm.username" placeholder="用户名" auto-complete="off" ></el-input>
               </el-form-item>  
-<!--               <el-form-item label="性别">
+               <el-form-item label="性别">
                 <el-select v-model="registerForm.sex" placeholder="请选择性别">
                   <el-option label="男" value="男"></el-option>
                   <el-option label="女" value="女"></el-option>
                 </el-select>
-              </el-form-item> -->
+              </el-form-item> 
               <el-form-item prop="password">
                 <el-input type="password" placeholder="密码" v-model="registerForm.password" auto-complete="off" ></el-input>
               </el-form-item>
               <el-form-item prop="email">
                 <el-input v-model="registerForm.email" placeholder="邮箱-用于找回密码"></el-input>
               </el-form-item>             
-<!--               <el-form-item label="确认密码" prop="checkPass">
+              <el-form-item label="确认密码" prop="checkPass">
                 <el-input type="password" v-model="registerForm.checkPass" auto-complete="off" ></el-input>
-              </el-form-item> -->
-<!--               <el-form-item label="年龄" prop="age">
+              </el-form-item> 
+               <el-form-item label="年龄" prop="age">
                 <el-input v-model.number="registerForm.age" ></el-input>
-              </el-form-item> -->
+              </el-form-item> 
               <el-form-item>
                 <el-button type="primary" @click="resetForm('registerForm')" class="submit_btn">注册</el-button>
               </el-form-item>
             </el-form>
-          </el-tab-pane>
-        </el-tabs>
+          </el-tab-pane>-->
+<!--         </el-tabs> -->
 		    	
 	  		</section>
 	  	</transition>
@@ -99,16 +101,15 @@ export default {
       async submitForm (formName) {
         //表单验证
         await this.$refs[formName].validate()
-        login({
-          'userName': this.loginForm.username,
-          'passWord': md5(this.loginForm.password)
+        register({
+          'username': this.loginForm.username,
+          'password': md5(this.loginForm.password)
         }).then(res => {
-          console.log(res)
           //控制跳转
           if(res.returnCode == '1111'){
             sessionStorage.setItem("username", this.loginForm.username)
             sessionStorage.setItem("token", res.token)
-            this.$router.push({path: '/home'})
+            this.$router.push({path: '/dashboard'})
             
           }else if(res.returnCode == '0000'){
             this.$message.warning(res.returnMessage);
@@ -123,14 +124,17 @@ export default {
         // 表单验证
         await this.$refs[formName].validate()
         register({
-            'userName': this.registerForm.username,
-            'passWord': md5(this.registerForm.password),
+            'username': this.registerForm.username,
+            'password': md5(this.registerForm.password),
             'email': this.registerForm.email
         }).then(res => {
           console.log(res)
           //控制跳转
           if(res.returnCode == '1111'){
-            this.$message.error(res.returnMessage);           
+            this.$message.success(res.returnMessage);
+            sessionStorage.setItem("username", this.registerForm.username)
+            sessionStorage.setItem("token", res.token)
+            this.$router.push({path: '/dashboard'})                       
           }else if(res.returnCode == '0000'){
             this.$message.warning(res.returnMessage);
           }else{

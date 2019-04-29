@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-breadcrumb separator-class="el-icon-arrow-right" class="crumb">
-      <el-breadcrumb-item :to="{ path: '/' }">后台</el-breadcrumb-item>
+      <el-breadcrumb-item :to="{ path: '/dashboard' }">首页</el-breadcrumb-item>
       <el-breadcrumb-item :to="{ path: '/role' }">角色管理</el-breadcrumb-item>
     </el-breadcrumb>
     <!--检索条-->
@@ -201,10 +201,6 @@ export default {
     }
   },
   mounted() {
-    var _this = this;
-    if(sessionStorage.getItem("username") == "" || sessionStorage.getItem("username") == null){
-      _this.$router.push({ path: "/login"});
-    }
     this.getInfo();
   }
 };

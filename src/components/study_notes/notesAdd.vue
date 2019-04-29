@@ -2,8 +2,8 @@
   <div>
     <el-header>
       <el-breadcrumb separator-class="el-icon-arrow-right" class="crumb">
-        <el-breadcrumb-item :to="{ path: '/' }">后台</el-breadcrumb-item>
-        <el-breadcrumb-item :to="{ path: '/P_GetProductList' }">学习笔记</el-breadcrumb-item>
+        <el-breadcrumb-item :to="{ path: '/dashboard' }">首页</el-breadcrumb-item>
+        <el-breadcrumb-item :to="{ path: '/notes' }">学习笔记</el-breadcrumb-item>
         <el-breadcrumb-item>添加笔记</el-breadcrumb-item>
       </el-breadcrumb>
     </el-header>
@@ -14,8 +14,8 @@
           <el-input v-model="addForm.noteHead"></el-input>
         </el-form-item>       
 
-        <el-form-item label="笔记类别" prop="IsFreeShipping">
-          <el-radio-group v-model="addForm.IsFreeShipping">
+        <el-form-item label="笔记类别" prop="noteType">
+          <el-radio-group v-model="addForm.noteType">
             <el-radio class="radio" :label="1">Java</el-radio>
             <el-radio class="radio" :label="2">Vue</el-radio>
           </el-radio-group>
@@ -67,7 +67,7 @@
 </template>
 <script>
 import UEditor from "../UEditor.vue";
-
+import { insertNotes } from '@/axios/api';
 export default {
   data() {
 
@@ -84,7 +84,7 @@ export default {
       addForm: {
         noteHead: "", //名称
         Image: [], //图片
-        noteType: 0, //邮费选择
+        noteType: 1, //邮费选择
         studyFeel: "", //简介
         noteBody: ""
       },
@@ -122,53 +122,29 @@ export default {
           this.$confirm("确认提交吗？", "提示", {}).then(() => {
             this.addLoading = true;
             var para = Object.assign({}, this.addForm);
-            // para.Image = para.Image.join(",");
 
-            this.$http
-              .post("/app/studyNotes/add",
-                {
+            insertNotes({
                   'username' : sessionStorage.getItem("username"),
                   'noteHead' : para.noteHead,
                   'noteBody' : para.noteBody,
                   'noteType' : para.noteType,
                   'studyFeel' : para.studyFeel
-                })
-              .then(
-                function(response) {
-                  this.addLoading = false;
-                  var returnCode = response.data.returnCode;
-                  if (returnCode == '1111') {
-                    this.$message({
-                      showClose: true,
-                      type: "success",
-                      message: response.data.returnMessage
-                    });
-                    // 表单重置
-                    this.$refs["addForm"].resetFields();
-                    this.addFormVisible = false;
-                    this.$router.push({
-                      path: "/P_GetProductList"
-                    });
-                  } else if (returnCode === 40001) {
-                    this.$message({
-                      showClose: true,
-                      type: "warning",
-                      message: response.data.returnMessage
-                    });
-                    setTimeout(() => {
-                      tt.$router.push({
-                        path: "/login"
-                      });
-                    }, 1500);
-                  } else {
-                    this.$message({
-                      showClose: true,
-                      type: "warning",
-                      message: response.data.returnMessage
-                    });
-                  }
-                }.bind(this)
-              )
+                }).then(res => {
+                    this.addLoading = false;
+                    //控制跳转
+                    if(res.returnCode == '1111'){
+                      console.log(1)
+                      this.$message.success(res.returnMessage);
+                      // 表单重置
+                      this.$refs["addForm"].resetFields();
+                      this.addFormVisible = false;
+                      this.$router.push({path: "/notes"});   
+                    }else if(res.returnCode == '0000'){
+                      this.$message.warning(res.returnMessage);
+                    }else{
+                      this.$message.error(res.message);
+                    }
+                  })
               // 请求error
               .catch(
                 function(error) {

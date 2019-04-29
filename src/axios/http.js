@@ -5,7 +5,7 @@ import { Message } from 'element-ui';
 if (process.env.NODE_ENV == 'development') { 
  axios.defaults.baseURL = 'http://localhost:8888/';} 
 else if (process.env.NODE_ENV == 'production') { 
- axios.defaults.baseURL = 'https://www.production.com';
+ axios.defaults.baseURL = 'http://140.143.74.201:8888/';
 }
 
 //通过axios.defaults.timeout设置默认的请求超时时间。例如超过了10s，就会告知用户当前请求超时，请刷新等。
@@ -13,7 +13,7 @@ axios.defaults.timeout = 10000;
 
 //post请求头的设置post请求的时候，我们需要加上一个请求头，所以可以在这里进行一个默认的设置
 //axios.defaults.headers.common['token'] = sessionStorage.getItem("token");
-
+axios.defaults.headers['Content-Type'] = 'application/json';  //此处是增加的代码，设置请求头的类型
 // 请求拦截器
 axios.interceptors.request.use( 
  config => { 

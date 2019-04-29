@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-breadcrumb separator-class="el-icon-arrow-right" class="crumb">
-      <el-breadcrumb-item :to="{ path: '/' }">后台</el-breadcrumb-item>
+      <el-breadcrumb-item :to="{ path: '/dashboard' }">首页</el-breadcrumb-item>
       <el-breadcrumb-item :to="{ path: '/upload' }">文件上传</el-breadcrumb-item>
     </el-breadcrumb>
 
@@ -24,50 +24,7 @@ export default {
     return {
     };
   },
-  methods: {
-
-    getInfo() {
-      this.$http
-        .get("../../../static/JSON/Roles.json"
-        //   "/hxmback/api/Role/GetRoles", 
-        // {
-        //   params: {
-        //     pageIndex: this.pageIndex,
-        //     pageSize: this.pageSize
-        //   }
-        // }
-        )
-        .then(
-          function(response) {
-            var status = response.data.Status;
-            if (status === 1) {
-              this.roleList = response.data.Result.data;
-              this.pageCount = response.data.Result.PageIndex;
-            } else if (status === 40001) {
-              this.$message({
-                showClose: true,
-                type: "warning",
-                message: response.data.Result
-              });
-              setTimeout(() => {
-                tt.$router.push({
-                  path: "/login"
-                });
-              }, 1500);
-            }
-          }.bind(this)
-        )
-        // 请求error
-        .catch(
-          function(error) {
-            this.$notify.error({
-              title: "错误",
-              message: "错误：请检查网络"
-            });
-          }.bind(this)
-        );
-    }
-}
+  methods: {}
 };
 </script>
 

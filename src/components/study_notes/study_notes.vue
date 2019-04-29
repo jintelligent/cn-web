@@ -1,8 +1,8 @@
 <template>
   <div>
     <el-breadcrumb separator-class="el-icon-arrow-right" class="crumb">
-      <el-breadcrumb-item :to="{ path: '/' }">后台</el-breadcrumb-item>
-      <el-breadcrumb-item :to="{ path: '/studyNote' }">学习笔记</el-breadcrumb-item>
+      <el-breadcrumb-item :to="{ path: '/dashboard' }">首页</el-breadcrumb-item>
+      <el-breadcrumb-item>学习笔记</el-breadcrumb-item>
     </el-breadcrumb>
     <!--检索条-->
     <el-col class="toolbar" style="padding-top: 15px;">
@@ -37,7 +37,7 @@
             <img v-for="(item,index) in scope.row.Image" :key="index" :src="mainurl+item" width="200" />
         </template>
       </el-table-column> -->
-      <el-table-column label="笔记类别" prop="noteType" sortable>
+      <el-table-column label="笔记类别" prop="noteType" sortable :formatter="getType">
       </el-table-column>
       <el-table-column label="创建时间" prop="opTime" sortable>
       </el-table-column>
@@ -180,6 +180,16 @@ export default {
         },
     },
   methods: {
+    getType(row, type) {
+      switch(row[type.property]){
+        case 1:
+          return "Java";
+        case 2:
+          return "Vue";
+          default:
+            return "其他";
+      }
+    },
         onEditorReady(editor) {}, // 准备编辑器       
         onEditorBlur(){}, // 失去焦点事件
         onEditorFocus(){}, // 获得焦点事件
@@ -326,7 +336,7 @@ export default {
       });
     },
     handleAdd() {
-      this.$router.push("/P_GetProductList/productAdd");
+      this.$router.push("/notes/notesAdd");
     },
     editSubmit() {
       this.$refs.editForm.validate(valid => {

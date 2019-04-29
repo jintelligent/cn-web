@@ -1,8 +1,8 @@
 <template>
   <div>
     <el-breadcrumb separator-class="el-icon-arrow-right" class="crumb">
-      <el-breadcrumb-item :to="{ path: '/home' }">后台</el-breadcrumb-item>
-      <el-breadcrumb-item :to="{ path: '/schedule' }">日程安排</el-breadcrumb-item>
+      <el-breadcrumb-item :to="{ path: '/dashboard' }">首页</el-breadcrumb-item>
+      <el-breadcrumb-item>日程安排</el-breadcrumb-item>
     </el-breadcrumb>
     <!--检索条-->
     <!-- <el-col class="toolbar" style="padding-top: 15px;">
