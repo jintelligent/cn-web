@@ -205,7 +205,6 @@ export default {
     addSubmit() {
       // var content = this.$refs.ueditor.getUEContent();
       this.addForm.noteBody = encodeURIComponent(this.content);
-      console.log(this.addForm.noteBody)
       this.openDetails = false;
     },
     /*

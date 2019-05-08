@@ -19,7 +19,7 @@
   </div>
 </template>
 <script>
-import bus from "../utils/bus.js";
+import bus from "../../utils/bus.js";
 export default {
   props: {
     BMapMsg: {
@@ -65,6 +65,7 @@ export default {
         return document.getElementById(id);
       }
 
+
       var map = new BMap.Map("l-map");
       map.enableScrollWheelZoom(); //启用滚轮放大缩小，默认禁用
       map.enableContinuousZoom(); //启用地图惯性拖拽，默认禁用
@@ -76,6 +77,42 @@ export default {
       marker.addEventListener("click", function(e){    
           alert("当前位置：116.312777,39.979958");    
       })
+
+      var mapPoints = [
+                {x:30.312903,y:120.382029},
+                {x:30.215855,y:120.024568},
+                {x:30.18015,y:120.174968},
+                {x:30.324994,y:120.164399},
+                {x:30.24884,y:120.305074}
+            ];
+
+      var i = 0;
+      // 函数 创建多个标注
+            function markerFun (points) {
+                var markers = new BMap.Marker(points);
+                map.addOverlay(markers);
+            }
+            for (;i<mapPoints.length;i++) {
+                var points = new BMap.Point(mapPoints[i].y,mapPoints[i].x);//创建坐标点
+                markerFun(points);
+            }
+
+            getBoundary();
+ 
+            function   getBoundary(){       
+                var bdary = new BMap.Boundary();
+                //var name = document.getElementById("districtName").value;
+                bdary.get("山西", function(rs){       //获取行政区域
+                    //map.clearOverlays();        //清除地图覆盖物       
+                    var count = rs.boundaries.length; //行政区域的点有多少个
+                    for(var i = 0; i < count; i++){
+                        var ply = new BMap.Polygon(rs.boundaries[i], {strokeWeight: 2, strokeColor: "#ff0000"}); //建立多边形覆盖物
+                        map.addOverlay(ply);  //添加覆盖物
+                        //map.setViewport(ply.getPath());    //调整视野         
+                    }                
+                });   
+            }
+
       var geoc = new BMap.Geocoder();
       map.addEventListener("click", function(e) {
         var pt = e.point;
@@ -170,6 +207,7 @@ export default {
         local.search(myValue);
       }
     },
+
     // 点击提交
     submitForm() {
       var _this = this;

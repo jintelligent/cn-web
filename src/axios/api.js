@@ -35,7 +35,11 @@ export const updateAdmin = p => post('/app/user/editAdmin', p); //更新
 export const insertAdmin = p => post('/app/user/addAdmin', p); //保存
 
 //我的成就-学习笔记
-export const selectNotes = p => get('/app/studyNotes/select', p); //查询所有
+export const selectNotes = p => post('/app/studyNotes/select', p); //查询所有
 export const updateNotes = p => post('/app/studyNotes/update', p); //更新
-export const insertNotes = p => post('/app/studyNotes/add', p); //保存
+export const insertNotes = p => post('/app/studyNotes/insert', p); //保存
 export const deleteNotes = p => post('/app/studyNotes/delete', p); //删除
+
+//面试
+export const fenjie = p => post('/app/mianshi/fenjie', p); //查询所有
+export const fs = p => post('/app/test/t', p); //更新

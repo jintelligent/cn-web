@@ -43,7 +43,7 @@
       </el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
-          <el-button size="mini"  type="primary" plain icon="el-icon-edit" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+          <el-button size="mini"  type="primary" plain icon="el-icon-edit" @click="handleEdit(scope.$index, scope.row)" disabled>编辑</el-button>
           <el-button size="mini" type="danger" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
         </template>
       </el-table-column>
@@ -71,14 +71,14 @@
         </div>
        <div slot="footer" class="dialog-footer">
         <el-button @click.native="openDetails=false">取消</el-button>
-        <el-button type="primary" @click.native="addSubmit">保存</el-button>
+        <el-button type="primary" @click.native="editSubmit">保存</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 <script>
 import md5 from "js-md5";
-
+import { selectNotes,deleteNotes,updateNotes } from '@/axios/api';
 export default {
   data() {
     return {
@@ -117,60 +117,6 @@ export default {
       // 搜索关键字
       filters: {
         keyword: ""
-      },
-      //编辑界面是否显示
-      editFormVisible: false,
-      editLoading: false,
-
-      //编辑界面数据
-      editForm: {
-        IsLock: false,
-        Name: "",
-        Role: "",
-        RoleID: "",
-        Password: ""
-      },
-      editFormRules: {
-        Name: [
-          {
-            required: true,
-            message: "请输入账户",
-            trigger: "blur"
-          }
-        ],
-        Password: [
-          {
-            required: true,
-            message: "请输入密码",
-            trigger: "blur"
-          }
-        ]
-      },
-      //新增界面是否显示
-      addFormVisible: false,
-      addLoading: false,
-      addFormRules: {
-        Name: [
-          {
-            required: true,
-            message: "请输入账户",
-            trigger: "blur"
-          }
-        ],
-        Password: [
-          {
-            required: true,
-            message: "请输入密码",
-            trigger: "blur"
-          }
-        ]
-      },
-      //新增界面数据
-      addForm: {
-        IsLock: false,
-        Name: "",
-        RoleID: "",
-        Password: ""
       }
     };
   },
@@ -199,33 +145,23 @@ export default {
          2、搜索关键字
          3、分页
       */
-    getInfo() {
-      this.$http
-        .post("/app/studyNotes/selNotesByUser", {
-            'userName' : sessionStorage.getItem("username")
-         }
-        )
-        .then(
-          function(response) {
-            var returnCode = response.data.returnCode;
-            if (returnCode == '1111') {
-              this.NoteList = response.data.result;
-              //this.pageCount = response.data.Result.Page;
-            } else if (returnCode === 40001) {
-              this.$message({
-                showClose: true,
-                type: "warning",
-                message: response.data.returnMessage
-              });
-              setTimeout(() => {
-                tt.$router.push({
-                  path: "/login"
-                });
-              }, 1500);
-            }
-          }.bind(this)
-        )
-        // 请求error
+     getInfo(){
+      selectNotes({
+          'username': sessionStorage.getItem("username"),
+        })
+      .then(res => {
+          //控制跳转
+          if(res.returnCode == '1111'){
+            this.NoteList = res.result
+            console.log(res.result)
+            //this.pageCount = res.result.length
+            
+          }else if(res.returnCode == '0000'){
+            this.$message.warning(res.returnMessage);
+          }else{
+            this.$message.error(res.message);
+          }
+        })
         .catch(
           function(error) {
             this.$notify.error({
@@ -234,6 +170,7 @@ export default {
             });
           }.bind(this)
         );
+
     },
     //
     getNotes() {
@@ -244,51 +181,7 @@ export default {
       this.pageIndex = val;
       this.getInfo();
     },
-    /*
-        1、添加编辑时获取角色列表，渲染下拉菜单
-        2、点击管理员列表的编辑，弹出模态框
-        3、点击新增管理严，弹出模态框
-        4、保存修改
-        5、保存添加
-      */
-    getRoleList() {
-      // 获取角色列表
-      this.$http
-        .get("/hxmback/api/Role/GetRoles", {
-          params: {
-            PageIndex: 1,
-            PageSize: 999
-          }
-        })
-        .then(
-          function(response) {
-            var status = response.data.Status;
-            if (status === 1) {
-              this.roleList = response.data.Result.data;
-            } else if (status === 40001) {
-              this.$message({
-                showClose: true,
-                type: "warning",
-                message: response.data.Result
-              });
-              setTimeout(() => {
-                tt.$router.push({
-                  path: "/login"
-                });
-              }, 1500);
-            }
-          }.bind(this)
-        )
-        // 请求error
-        .catch(
-          function(error) {
-            this.$notify.error({
-              title: "错误",
-              message: "错误：请检查网络"
-            });
-          }.bind(this)
-        );
-    },
+
     handleEdit(index, row) {
       var obj = Object.assign({}, row);
 
@@ -298,32 +191,20 @@ export default {
     handleDelete(index, row) {
       var obj = Object.assign({}, row);
       this.$confirm("确认删除吗？", "提示", {}).then(() => {
-        this.$http
-          .get("/hxmback/api/Back/P_ProductDel", {
-            params: {
-              token: getCookie("token"),
-              id: obj.ID
-            }
-          })
-          .then(
-            function(response) {
-              var status = response.data.Status;
-              if (status === 1) {
-                this.getInfo();
-              } else if (status === 40001) {
-                this.$message({
-                  showClose: true,
-                  type: "warning",
-                  message: response.data.Result
-                });
-                setTimeout(() => {
-                  tt.$router.push({
-                    path: "/login"
-                  });
-                }, 1500);
+          deleteNotes({
+              id: obj.id
+            })
+          .then(res => {
+              //控制跳转
+              if(res.returnCode == '1111'){
+                this.$message.success(res.returnMessage);
+                this.getInfo();           
+              }else if(res.returnCode == '0000'){
+                this.$message.warning(res.returnMessage);
+              }else{
+                this.$message.error(res.message);
               }
-            }.bind(this)
-          )
+            })
           // 请求error
           .catch(
             function(error) {
@@ -339,18 +220,22 @@ export default {
       this.$router.push("/notes/notesAdd");
     },
     editSubmit() {
-      this.$refs.editForm.validate(valid => {
-        if (valid) {
           //判断是否填写完整  --true
           this.$confirm("确认提交吗？", "提示", {}).then(() => {
-            this.editLoading = true;
-            var para = Object.assign({}, this.editForm);
-            if (para.Password.length > 20) {
-            } else {
-              para.Password = md5(para.Password);
-            }
-            // 将token传入参数中
-            para.Token = getCookie("token");
+          deleteNotes({
+                id: obj.id
+              })
+            .then(res => {
+                //控制跳转
+                if(res.returnCode == '1111'){
+                  this.$message.success(res.returnMessage);
+                  this.getInfo();           
+                }else if(res.returnCode == '0000'){
+                  this.$message.warning(res.returnMessage);
+                }else{
+                  this.$message.error(res.message);
+                }
+              })
             // 发保存请求
             this.$http
               .get("/hxmback/api/Admin/Edit", {
@@ -358,7 +243,6 @@ export default {
               })
               .then(
                 function(response) {
-                  this.editLoading = false;
                   var status = response.data.Status;
                   if (status === 1) {
                     // 表单重置
@@ -395,70 +279,6 @@ export default {
                 }.bind(this)
               );
           });
-        }
-      });
-    },
-    addSubmit() {
-      console.log(this.content)
-      // this.$refs.addForm.validate(valid => {
-      //   if (valid) {
-      //     //判断是否填写完整  --true
-      //     this.$confirm("确认提交吗？", "提示", {}).then(() => {
-      //       this.addLoading = true;
-      //       //NProgress.start();
-      //       var para = Object.assign({}, this.addForm);
-      //       if (para.Password.length > 20) {
-      //       } else {
-      //         para.Password = md5(para.Password);
-      //       }
-      //       // 将token传入参数中
-      //       para.Token = getCookie("token");
-      //       // 发保存请求
-      //       this.$http
-      //         .get("/hxmback/api/Admin/Add", {
-      //           params: para
-      //         })
-      //         .then(
-      //           function(response) {
-      //             this.addLoading = false;
-      //             var status = response.data.Status;
-      //             if (status === 1) {
-      //               // 表单重置
-      //               this.$refs["addForm"].resetFields();
-      //               this.addFormVisible = false;
-      //               this.getInfo();
-      //             } else if (status === 40001) {
-      //               this.$message({
-      //                 showClose: true,
-      //                 type: "warning",
-      //                 message: response.data.Result
-      //               });
-      //               setTimeout(() => {
-      //                 tt.$router.push({
-      //                   path: "/login"
-      //                 });
-      //               }, 1500);
-      //             } else {
-      //               this.$message({
-      //                 showClose: true,
-      //                 type: "warning",
-      //                 message: response.data.Result
-      //               });
-      //             }
-      //           }.bind(this)
-      //         )
-      //         // 请求error
-      //         .catch(
-      //           function(error) {
-      //             this.$notify.error({
-      //               title: "错误",
-      //               message: "错误：请检查网络"
-      //             });
-      //           }.bind(this)
-      //         );
-      //     });
-      //   }
-      // });
     }
   },
   mounted() {

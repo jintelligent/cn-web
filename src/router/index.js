@@ -17,7 +17,6 @@ var roleLimit = resolve => require(['@/components/role/roleLimit.vue'], resolve)
 
 var user = resolve => require(['../components/user/userList.vue'], resolve)
 var notes = resolve => require(['../components/study_notes/study_notes.vue'], resolve)
-var notesEdit = resolve => require(['../components/study_notes/notesEdit.vue'], resolve)
 var notesAdd = resolve => require(['../components/study_notes/notesAdd.vue'], resolve)
 
 var upload = resolve => require(['@/components/file/upload.vue'], resolve)
@@ -25,6 +24,12 @@ var upload = resolve => require(['@/components/file/upload.vue'], resolve)
 var schedule = resolve => require(['@/components/schedule/scheduleList.vue'], resolve)
 
 var dashboard = resolve => require(['@/components/dashboard/dashboard.vue'], resolve)
+
+var resume = resolve => require(['@/components/resume/resume.vue'], resolve)
+
+var travel = resolve => require(['@/components/travel/travel.vue'], resolve)
+
+var fs = resolve => require(['@/components/fs/fs.vue'], resolve)
 
 // 懒加载方式，当路由被访问的时候才加载对应组件
 Vue.use(Router)
@@ -54,9 +59,8 @@ export default new Router({
         { path: '/role/rolelimit/:id', component: roleLimit, name: '权限设置' },
         // banner
         { path: '/user', component: user, name: '人员管理' },
-        // productList
+        // notes
         { path: '/notes', component: notes, name: '学习笔记' },
-        { path: '/notes/notesEdit/:id', component: notesEdit, name: '编辑笔记' },
         { path: '/notes/notesAdd', component: notesAdd, name: '添加笔记' },        
 
         //文件上传
@@ -65,6 +69,10 @@ export default new Router({
         { path: '/schedule', component: schedule, name: '日程安排' },
 
         { path: '/dashboard', component: dashboard, name: '首页展示' },
+
+        { path: '/resume', component: resume, name: '我的简历' },
+        { path: '/travel', component: travel, name: '旅游日志' },
+        { path: '/fs', component: fs, name: '面试题测试' },
         
       ]
     },

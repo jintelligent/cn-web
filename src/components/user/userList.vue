@@ -83,7 +83,8 @@ export default {
       selCommonUser().then(res => {
           //控制跳转
           if(res.returnCode == '1111'){
-              this.userList = res.result;     
+              this.userList = res.result;
+              this.pageCount = res.result.length     
           }else if(res.returnCode == '0000'){
             this.$message.warning(res.returnMessage);
           }else{
