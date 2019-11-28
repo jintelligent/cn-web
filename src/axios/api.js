@@ -16,6 +16,7 @@ export const selCommonUser = p => post('/app/user/selCommonUser', p); //查询�
 //菜单管理
 export const selectMenus = p => post('/app/menus/get', p); //菜单查询
 
+
 //待办管理
 export const selAllSchedule = p => post('/app/schedule/selectAll', p); //查询所有
 export const delSchedule = p => post('/app/schedule/delete', p); //删除
@@ -43,3 +44,13 @@ export const deleteNotes = p => post('/app/studyNotes/delete', p); //删除
 //面试
 export const fenjie = p => post('/app/mianshi/fenjie', p); //查询所有
 export const fs = p => post('/app/test/t', p); //更新
+
+//接口管理
+export const selectAllInter = p => post('/app/inter/selectAll', p); //查询所有
+export const selectInterById = p => post('/app/inter/selectById', p); //查询所有
+export const updateInter = p => post('/app/inter/update', p); //更新
+export const insertInter = p => post('/app/inter/save', p); //保存
+export const deleteInter = p => post('/app/inter/delete', p); //删除
+
+//项目目录管理
+export const selectProjectDir = p => post('/app/file/see', p); //查询权限列表

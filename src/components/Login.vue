@@ -3,7 +3,7 @@
 	  	<transition name="form-fade" mode="in-out">
 	  		<section class="form_contianer">
 		  		<div class="manage_tip">
-		  			<p>今天干了啥</p>
+		  			<p>开发指南</p>
 		  		</div>
 <!--           <el-tabs type="border-card">
           <el-tab-pane label="登录"> -->

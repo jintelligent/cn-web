@@ -4,9 +4,9 @@
     <div>
       <el-header>
         <div style="float: left;height: 60px;">
-          <img src="../assets/1.png" style="height:50px;width:50px;" alt="">
+          <img src="../assets/0Z939595B9.gif" style="height:50px;width:100px;" alt="">
         </div>
-        <div v-if="welcome" style="float: left;height: 60px;color:#fff;width:500px">  今天干了啥</div>
+        <div v-if="welcome" style="float: left;height: 60px;color:#fff;width:500px">  开发指南</div>
         <div style="float: left;height: 60px;width:450px;">
             <div class="marquee">
                 <!-- <div class="marquee_title">

@@ -51,7 +51,7 @@
           <el-input v-model="editForm.username" auto-complete="off" disabled></el-input>
         </el-form-item>
         <el-form-item label="密码" prop="password">
-          <el-input type="password" v-model="editForm.password" :maxlength="20" :clearable='true'></el-input>
+          <el-input type="password"  :maxlength="20" :clearable='true' disabled=""></el-input>
         </el-form-item>
         <el-form-item label="锁定">
           <el-radio-group v-model="editForm.isLock">

@@ -3,28 +3,28 @@
     <el-header>
       <el-breadcrumb separator-class="el-icon-arrow-right" class="crumb">
         <el-breadcrumb-item :to="{ path: '/dashboard' }">首页</el-breadcrumb-item>
-        <el-breadcrumb-item :to="{ path: '/notes' }">学习笔记</el-breadcrumb-item>
-        <el-breadcrumb-item>添加笔记</el-breadcrumb-item>
+        <el-breadcrumb-item :to="{ path: '/notes' }">接口信息</el-breadcrumb-item>
+        <el-breadcrumb-item>添加接口</el-breadcrumb-item>
       </el-breadcrumb>
     </el-header>
 
     <el-main style="width:70%;">
       <el-form :model="addForm" :rules="rules" ref="addForm" label-width="150px" class="demo-addForm">
-        <el-form-item label="笔记标题" prop="noteHead">
+        <el-form-item label="接口URL" prop="noteHead">
           <el-input v-model="addForm.noteHead"></el-input>
         </el-form-item>       
 
-        <el-form-item label="笔记类别" prop="noteType">
+        <el-form-item label="请求方式" prop="noteType">
           <el-radio-group v-model="addForm.noteType">
-            <el-radio class="radio" :label="1">Java</el-radio>
-            <el-radio class="radio" :label="2">Vue</el-radio>
+            <el-radio class="radio" :label="1">POST</el-radio>
+            <el-radio class="radio" :label="2">GET</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="笔记内容" prop="noteBody">
-          <el-button type="info" @click="clickOpenDetail()">点击添加笔记内容</el-button>
+        <el-form-item label="接口其他信息" prop="noteBody">
+          <el-button type="info" @click="clickOpenDetail()">点击添加接口其他信息</el-button>
         </el-form-item>
         
-        <el-form-item label="学习感受" prop="studyFeel">
+        <el-form-item label="请求参数" prop="studyFeel">
           <el-input type="textarea" v-model="addForm.studyFeel"></el-input>
         </el-form-item>
 

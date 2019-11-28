@@ -31,6 +31,10 @@ var travel = resolve => require(['@/components/travel/travel.vue'], resolve)
 
 var fs = resolve => require(['@/components/fs/fs.vue'], resolve)
 
+var inter = resolve => require(['@/components/interface/inter.vue'], resolve)
+
+var items = resolve => require(['@/components/items/dir.vue'], resolve)
+
 // 懒加载方式，当路由被访问的时候才加载对应组件
 Vue.use(Router)
 
@@ -73,6 +77,10 @@ export default new Router({
         { path: '/resume', component: resume, name: '我的简历' },
         { path: '/travel', component: travel, name: '旅游日志' },
         { path: '/fs', component: fs, name: '面试题测试' },
+
+        { path: '/inter', component: inter, name: '接口管理' },
+
+        { path: '/items', component: items, name: '项目结构' },
         
       ]
     },

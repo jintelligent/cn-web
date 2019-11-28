@@ -2,7 +2,7 @@
   <div>
     <el-breadcrumb separator-class="el-icon-arrow-right" class="crumb">
       <el-breadcrumb-item :to="{ path: '/dashboard' }">首页</el-breadcrumb-item>
-      <el-breadcrumb-item>学习笔记</el-breadcrumb-item>
+      <el-breadcrumb-item>接口测试</el-breadcrumb-item>
     </el-breadcrumb>
     <!--检索条-->
     <el-col class="toolbar" style="padding-top: 15px;">
@@ -23,21 +23,27 @@
     <el-table-column type="expand">
       <template slot-scope="props">
         <el-form label-position="left" inline class="demo-table-expand">
-          <el-form-item label="学习感受:">
+          <el-form-item label="请求参数:">
             <span>{{ props.row.studyFeel }}</span>
-            <!-- {{ props.row.name }}<img v-for="(item,index) in props.row.Image" :key="index" :src="mainurl+item" width="200" style="margin-left:20px;" /> -->
+            <!-- <img v-for="(item,index) in props.row.Image" :key="index" :src="mainurl+item" width="200" style="margin-left:20px;" /> -->
+          </el-form-item>
+        </el-form>
+         <el-form label-position="left" inline class="demo-table-expand">
+          <el-form-item label="请求参数:">
+            <span>{{ props.row.noteHead }}</span>
+            <!-- <img v-for="(item,index) in props.row.Image" :key="index" :src="mainurl+item" width="200" style="margin-left:20px;" /> -->
           </el-form-item>
         </el-form>
       </template>
     </el-table-column>
-      <el-table-column label="笔记标题" prop="noteHead">
+      <el-table-column label="接口URL" prop="noteHead">
       </el-table-column>
       <!-- <el-table-column label="商品图片" prop="Image" >
         <template slot-scope="scope">
             <img v-for="(item,index) in scope.row.Image" :key="index" :src="mainurl+item" width="200" />
         </template>
       </el-table-column> -->
-      <el-table-column label="笔记类别" prop="noteType" sortable :formatter="getType">
+      <el-table-column label="请求方式" prop="noteType" sortable :formatter="getType">
       </el-table-column>
       <el-table-column label="创建时间" prop="opTime" sortable>
       </el-table-column>
@@ -129,9 +135,9 @@ export default {
     getType(row, type) {
       switch(row[type.property]){
         case 1:
-          return "Java";
+          return "POST";
         case 2:
-          return "Vue";
+          return "GET";
           default:
             return "其他";
       }

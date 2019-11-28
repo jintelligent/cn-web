@@ -2,34 +2,9 @@
   <div>
     <el-breadcrumb separator-class="el-icon-arrow-right" class="crumb">
       <el-breadcrumb-item :to="{ path: '/dashboard' }">首页</el-breadcrumb-item>
-      <el-breadcrumb-item>工作进度</el-breadcrumb-item>
+      <el-breadcrumb-item>接口管理</el-breadcrumb-item>
     </el-breadcrumb>
-    <!--检索条-->
-    <!-- <el-col class="toolbar" style="padding-top: 15px;">
-      <el-form :inline="true" :model="filters">
-        <el-form-item label="关键字">
-          <el-input v-model="filters.keyword" placeholder="关键字"></el-input>
-        </el-form-item>
-        <el-form-item label="创建时间">
-          <el-col :span="11">
-            <el-date-picker type="date" placeholder="开始日期" v-model="filters.StTime" value-format="yyyy-MM-dd" style="width: 100%;"></el-date-picker>
-          </el-col>
-          <el-col class="line" :span="1">~</el-col>
-          <el-col :span="11">
-            <el-date-picker type="date" placeholder="结束时间" v-model="filters.EndTime" value-format="yyyy-MM-dd" style="width: 100%;"></el-date-picker>
-          </el-col>
-        </el-form-item>
-        <el-form-item label="日程状态">
-          <el-select v-model="filters.Type" placeholder="日程状态">
-            <el-option v-for="item in statusList" :key="item.value" :label="item.name" :value="item.value"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="getUsers()">查询</el-button>
-          <el-button type="primary" @click.native="addFormVisible=true">添加待办</el-button>
-        </el-form-item>
-      </el-form>
-    </el-col> -->
+
     <!--检索条-->
     <el-col class="toolbar" style="padding-top: 15px;">
       <el-form :inline="true" :model="filters">
@@ -37,60 +12,72 @@
           <el-input v-model="filters.keyword" placeholder="关键字"></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="getUsers()">查询</el-button>
+          <el-button type="primary" @click="getUsers()" icon="el-icon-search"></el-button>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click.native="addFormVisible=true">添加工作</el-button>
+          <el-button type="primary" @click.native="addFormVisible=true" icon="el-icon-plus" ></el-button>
         </el-form-item>
       </el-form>
     </el-col>
     <!-- table 内容 -->
     <el-table 
-      :data="scheduleList.slice((currentPage-1)*pageSize,currentPage*pageSize)"
+      :data="interList.slice((currentPage-1)*pageSize,currentPage*pageSize)"
       style="width: 100%" :border='true'>
       <el-table-column type="expand">
-        <template slot-scope="props">
-          <el-form label-position="left" inline class="demo-table-expand">
-            <el-form-item label="详细描述:">
-              <span>{{ props.row.remark }}</span>
-            </el-form-item>
-          </el-form>
-        </template>
+          <template slot-scope="props">
+            <el-form label-position="left" inline class="demo-table-expand">
+              <el-form-item label="接口地址">
+                <span>{{ props.row.url }}</span>
+              </el-form-item>
+              <el-form-item label="请求参数">
+                <span>{{ props.row.param }}</span>
+              </el-form-item>
+              <el-form-item label="创建时间">
+                <span>{{ props.row.createTime }}</span>
+              </el-form-item>
+              <el-form-item label="参数描述">
+                <span>{{ props.row.remark }}</span>
+              </el-form-item>
+            </el-form>
+          </template>
       </el-table-column>
-      <el-table-column label="任务名称" prop="name">
+      <el-table-column type="index" :index="indexMethod">
       </el-table-column>
-      <el-table-column label="优先级" prop="priority">
+      <el-table-column label="接口名称" prop="name">
       </el-table-column>
-      <el-table-column label="状态" prop="status" :formatter="Status">
+      <el-table-column label="请求方式" prop="method">
       </el-table-column>
-      <el-table-column label="创建时间" prop="opTime">
+      <el-table-column label="创建时间" prop="createTime">
       </el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
-          <el-button size="mini" v-if="scope.row.status == 1" type="primary" plain icon="el-icon-edit" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-          <el-button size="mini" v-if="scope.row.status == 0" type="success" plain icon="el-icon-circle-check-outline" @click="handleSend(scope.$index, scope.row)" disabled>完成</el-button>
-          <el-button size="mini" type="danger" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+          <el-button size="mini" type="primary" plain icon="el-icon-edit" @click="handleEdit(scope.$index, scope.row)"></el-button>
+          <el-button size="mini" type="danger" icon="el-icon-delete" @click="handleDelete(scope.$index, scope.row)"></el-button>
         </template>
       </el-table-column>
     </el-table>
 
     <!--编辑界面-->
-    <el-dialog title="编辑任务" :visible.sync="editFormVisible">
+    <el-dialog title="编辑接口信息" :visible.sync="editFormVisible">
       <el-form :model="editForm" label-width="80px" ref="editForm" style="width:100%;text-align:center;">
-        <el-form-item label="任务名称" prop="name">
-          <el-input v-model="editForm.name" disabled></el-input>
+        <el-form-item label="接口id" prop="id">
+          <el-input v-model="editForm.id" disabled></el-input>
         </el-form-item>
-        <el-form-item label="优先级" prop="priority" >
-          <el-select v-model="editForm.priority" style="width:100%">
-            <el-option v-for="item in priorityList" :key="item.value" :label="item.name" :value="item.value"></el-option>
+        <el-form-item label="接口名称" prop="name">
+          <el-input v-model="editForm.name"></el-input>
+        </el-form-item>
+        <el-form-item label="接口地址" prop="url">
+          <el-input v-model="editForm.url"></el-input>
+        </el-form-item>
+        <el-form-item label="请求方式" prop="method" >
+          <el-select v-model="editForm.method" style="width:100%">
+            <el-option v-for="item in methodList" :key="item.value" :label="item.name" :value="item.value"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-select v-model="editForm.status" placeholder="任务状态" style="width:100%">
-            <el-option v-for="item in statusList" :key="item.value" :label="item.name" :value="item.value"></el-option>
-          </el-select>
+        <el-form-item label="请求参数" prop="param">
+          <el-input type="textarea" v-model="editForm.param"></el-input>
         </el-form-item>
-        <el-form-item label="详细描述" prop="remark">
+        <el-form-item label="参数描述" prop="remark">
           <el-input type="textarea" v-model="editForm.remark"></el-input>
         </el-form-item>
       </el-form>
@@ -101,22 +88,23 @@
     </el-dialog>
 
     <!--添加界面 :rules="addFormRules"-->
-    <el-dialog title="添加任务" :visible.sync="addFormVisible">
+    <el-dialog title="接口录入" :visible.sync="addFormVisible">
       <el-form :model="addForm" label-width="80px"  ref="addForm" style="width:100%;text-align:center;">
-        <el-form-item label="任务名称" prop="name">
+        <el-form-item label="接口名称" prop="name">
           <el-input v-model="addForm.name"></el-input>
         </el-form-item>
-        <el-form-item label="优先级" prop="priority" >
-          <el-select v-model="addForm.priority" style="width:100%">
-            <el-option v-for="item in priorityList" :key="item.value" :label="item.name" :value="item.value"></el-option>
+        <el-form-item label="接口地址" prop="url">
+          <el-input v-model="addForm.url"></el-input>
+        </el-form-item>
+        <el-form-item label="请求方式" prop="method" >
+          <el-select v-model="addForm.method" style="width:100%">
+            <el-option v-for="item in methodList" :key="item.value" :label="item.name" :value="item.value"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-select v-model="addForm.status" placeholder="任务状态" style="width:100%">
-            <el-option v-for="item in statusList" :key="item.value" :label="item.name" :value="item.value"></el-option>
-          </el-select>
+        <el-form-item label="请求参数" prop="param">
+          <el-input type="textarea" v-model="addForm.param"></el-input>
         </el-form-item>
-        <el-form-item label="详细描述" prop="remark">
+        <el-form-item label="参数描述" prop="remark">
           <el-input type="textarea" v-model="addForm.remark"></el-input>
         </el-form-item>
       </el-form>
@@ -148,13 +136,13 @@
 <script>
 import axios from 'axios';
 // 导入接口
-import { selAllSchedule, delSchedule, saveSchedule, updSchedule } from '@/axios/api';
+import { selectAllInter, insertInter, updateInter, deleteInter } from '@/axios/api';
 
 export default {
   data() {
     return {
 
-      scheduleList: [],//待办列表
+      interList: [],//待办列表
 
       currentPage: 1,
       pageSize: 5,
@@ -167,31 +155,24 @@ export default {
         EndTime: "",
         Type: 0
       },
-      // 状态数组
-      statusList: [
-        {
-          name: "已完成",
-          value: 0
-        },
-        {
-          name: "待办",
-          value: 1
-        }
-      ],
 
       //优先级数组
-      priorityList:[
+      methodList:[
         {
-          name: "低",
-          value: "低"
+          name: "Post",
+          value: "Post"
         },
         {
-          name: "中",
-          value: "中"
+          name: "Put",
+          value: "Put"
         },
         {
-          name: "高",
-          value: "高"
+          name: "Get",
+          value: "Get"
+        },
+        {
+          name: "Delete",
+          value: "Delete"
         }
       ],
 
@@ -202,9 +183,11 @@ export default {
       //编辑界面数据
       editForm: {
         name: "",
-        priority: "",
-        status: 0,
-        remark: ""
+        url: "",
+        param: "",
+        remark: "",
+        id: "",
+        method: "Post"
       },
 
       //添加待办界面是否显示
@@ -214,9 +197,10 @@ export default {
       //发货界面数据
       addForm: {
         name: "",
-        priority: "",
-        status: 0,
-        remark: ""
+        url: "",
+        param: "",
+        remark: "",
+        method: "Post"
       }
     };
   },
@@ -231,14 +215,12 @@ export default {
       }
     },
 
-    getScheduleList(){
+    getInterList(){
       var _this = this
-      selAllSchedule({
-          'username': sessionStorage.getItem("username"),
-        }).then(res => {
+      selectAllInter().then(res => {
           //控制跳转
           if(res.returnCode == '1111'){
-            _this.scheduleList = res.result
+            _this.interList = res.result
             console.log(res.result)
             _this.pageCount = res.result.length
             
@@ -272,10 +254,12 @@ export default {
     handleEdit(index, row) {
       var obj = Object.assign({}, row);
       console.log(obj);
+      this.editForm.id = obj.id;
       this.editForm.name = obj.name;
-      this.editForm.priority = obj.priority;
-      this.editForm.status = obj.status;
+      this.editForm.url = obj.url;
+      this.editForm.param = obj.param;
       this.editForm.remark = obj.remark;
+      this.editForm.method = obj.method;
       this.editFormVisible = true;
     },
 
@@ -283,20 +267,23 @@ export default {
     handleDelete(index, row) {
       // 发删除请求
        var obj = Object.assign({}, row);
-       delSchedule({
+       deleteInter({
           'id' : obj.id
         }).then(res => {
           //控制跳转
           if(res.returnCode == '1111'){
             this.$message.success(res.returnMessage);
             // 表单重置
-            this.getScheduleList();            
+            this.getInterList();            
           }else if(res.returnCode == '0000'){
             this.$message.warning(res.returnMessage);
           }else{
             this.$message.error(res.message);
           }
         })
+    },
+    indexMethod(index) {
+        return this.pageSize * (this.currentPage-1) + index + 1;
     },
 
     editSubmit() {
@@ -305,13 +292,15 @@ export default {
           //判断是否填写完整  --true
           this.$confirm("确认提交吗？", "提示", {}).then(() => {
             this.editLoading = true;
+            console.log()
             //调用接口
-            updSchedule({
+            updateInter({
+                'id' : this.editForm.id,
                 'name' : this.editForm.name,
-                'priority' : this.editForm.priority,
-                'status' : this.editForm.status,
+                'url' : this.editForm.url,
+                'param' : this.editForm.param,
                 'remark' : this.editForm.remark,
-                'username' : sessionStorage.getItem("username")
+                'method' : this.editForm.method
                 }).then(res => {
                   //控制跳转
                   if(res.returnCode == '1111'){
@@ -320,7 +309,7 @@ export default {
                     this.editFormVisible = false;
                     this.editLoading = false;
                     // 表单重置
-                    this.getScheduleList();            
+                    this.getInterList();            
                   }else if(res.returnCode == '0000'){
                     this.$message.warning(res.returnMessage);
                   }else{
@@ -339,19 +328,19 @@ export default {
           //判断是否填写完整  --true
           this.$confirm("确认提交吗？", "提示", {}).then(() => {
             this.sendLoading = true;
-            saveSchedule({
+            insertInter({
                  'name' : this.addForm.name,
-                 'priority' : this.addForm.priority,
-                 'status' : this.addForm.status,
+                 'url' : this.addForm.url,
+                 'param' : this.addForm.param,
                  'remark' : this.addForm.remark,
-                 'username' : sessionStorage.getItem("username")
+                 'method' : this.addForm.method,
                 }).then(res => {
                   //控制跳转
                   if(res.returnCode == '1111'){
                     this.$refs["addForm"].resetFields();
                     this.addFormVisible = false;
                     this.sendLoading = false;
-                    this.getScheduleList();           
+                    this.getInterList();           
                   }else if(res.returnCode == '0000'){
                     this.$message.warning(res.returnMessage);
                   }else{
@@ -364,7 +353,7 @@ export default {
     }
   },
   mounted() {
-    this.getScheduleList();
+    this.getInterList();
   }
 };
 </script>
@@ -392,4 +381,16 @@ export default {
 .el-input--medium {
   width: 100%;
 }
+.demo-table-expand {
+    font-size: 0;
+  }
+.demo-table-expand label {
+    width: 90px;
+    color: #99a9bf;
+  }
+.demo-table-expand .el-form-item {
+    margin-right: 0;
+    margin-bottom: 0;
+    width: 50%;
+  }
 </style>
